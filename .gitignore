@@ -1,0 +1,7 @@
+node_modules/
+android/
+*.apk
+test_play.js
+screenshots/
+package-lock.json
+.gradle/

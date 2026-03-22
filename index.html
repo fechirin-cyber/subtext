@@ -1,0 +1,4017 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUBTEXT — 会話の行間を読む交渉RPG</title>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-main: #1a1a2e;
+  --bg-sub: #16213e;
+  --bg-card: #0f172a;
+  --text: #e8e8e8;
+  --text-dim: #9a9aaa;
+  --correct: #00d2a0;
+  --fail: #ff4757;
+  --hint: #ffa502;
+  --ui-border: #8b7355;
+  --npc-name: #2ed8a3;
+  --choice-hover: #1e3a5f;
+  --btn-bg: #1e2a4a;
+  --btn-hover: #2a3d6a;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Georgia', 'Noto Serif JP', serif;
+  background: var(--bg-main);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 800px;
+  min-height: 100vh;
+  padding: 20px;
+  flex-direction: column;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* ===== FLASH OVERLAY ===== */
+#flash-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+/* ===== SHAKE ===== */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  15% { transform: translateX(-8px); }
+  30% { transform: translateX(8px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+  90% { transform: translateX(4px); }
+}
+
+.shake { animation: shake 0.3s ease-out; }
+
+/* ===== TITLE SCREEN ===== */
+#screen-title {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  background: radial-gradient(ellipse at center, #0d1b3e 0%, var(--bg-main) 70%);
+}
+
+.title-logo {
+  font-size: clamp(52px, 12vw, 96px);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: var(--text);
+  text-shadow:
+    0 0 20px rgba(0,210,160,0.4),
+    0 0 60px rgba(0,210,160,0.2);
+  font-style: italic;
+}
+
+.title-sub {
+  font-size: clamp(13px, 3vw, 18px);
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  margin-top: -12px;
+}
+
+.title-quote {
+  font-size: clamp(13px, 2.5vw, 16px);
+  color: var(--hint);
+  font-style: italic;
+  margin: 8px 0 16px;
+  opacity: 0.8;
+}
+
+.title-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 260px;
+  margin-top: 16px;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  min-height: 48px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  background: var(--btn-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  text-align: center;
+}
+
+.btn:hover, .btn:focus {
+  background: var(--btn-hover);
+  border-color: var(--npc-name);
+  outline: none;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn.btn-primary {
+  border-color: var(--npc-name);
+  color: var(--npc-name);
+}
+
+.btn.btn-primary:hover {
+  background: rgba(46,216,163,0.15);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== CHAPTER INTRO ===== */
+#screen-intro {
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  padding: 40px 20px;
+}
+
+.intro-chapter {
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--hint);
+  text-transform: uppercase;
+}
+
+.intro-title {
+  font-size: clamp(22px, 5vw, 34px);
+  color: var(--text);
+  text-align: center;
+}
+
+.intro-text-box {
+  max-width: 640px;
+  font-size: clamp(14px, 2.5vw, 17px);
+  color: var(--text-dim);
+  line-height: 2;
+  text-align: center;
+  min-height: 80px;
+  cursor: pointer;
+}
+
+.intro-hint {
+  font-size: 13px;
+  color: #555577;
+  letter-spacing: 0.05em;
+}
+
+/* ===== TOWN SCREEN ===== */
+#screen-town {
+  gap: 0;
+  padding: 0;
+}
+
+.town-header {
+  background: var(--bg-sub);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.town-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.town-chapter-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--hint);
+  text-transform: uppercase;
+}
+
+.town-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.town-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ap-display {
+  font-size: 14px;
+  color: var(--hint);
+}
+
+.ap-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--hint);
+  margin: 0 2px;
+  transition: background 0.3s;
+}
+
+.ap-dot.used { background: #333355; }
+
+.town-body {
+  flex: 1;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.town-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+  text-align: center;
+}
+
+.location-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.location-card {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.1s;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.location-card:hover:not(.disabled) {
+  border-color: var(--npc-name);
+  background: var(--choice-hover);
+  transform: translateY(-2px);
+}
+
+.location-card.visited {
+  opacity: 0.6;
+}
+
+.location-card.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.location-icon { font-size: 24px; }
+.location-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.location-npc { font-size: 12px; color: var(--npc-name); }
+.location-status { font-size: 11px; color: var(--text-dim); }
+
+.town-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 20px;
+}
+
+.town-message {
+  font-size: 13px;
+  color: var(--hint);
+  text-align: center;
+  padding: 8px;
+  border: 1px solid rgba(255,165,2,0.3);
+  border-radius: 4px;
+  background: rgba(255,165,2,0.05);
+}
+
+/* ===== CONVERSATION SCREEN ===== */
+#screen-conversation {
+  gap: 0;
+  padding: 0;
+}
+
+.conv-header {
+  background: var(--bg-sub);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.npc-portrait {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--ui-border);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  transition: filter 0.4s;
+  overflow: hidden;
+}
+
+.npc-portrait.nervous { filter: hue-rotate(10deg) saturate(1.5); }
+.npc-portrait.angry { filter: hue-rotate(-20deg) saturate(2) brightness(1.1); }
+.npc-portrait.sad { filter: grayscale(0.5) brightness(0.85); }
+.npc-portrait.open { filter: brightness(1.15) saturate(1.2); }
+
+.conv-npc-info { display: flex; flex-direction: column; gap: 2px; }
+.conv-npc-name { font-size: 17px; font-weight: 700; color: var(--npc-name); }
+.conv-npc-role { font-size: 12px; color: var(--text-dim); }
+
+.conv-body {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.speech-bubble {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-size: clamp(14px, 2.5vw, 16px);
+  line-height: 1.8;
+  cursor: pointer;
+  min-height: 60px;
+  position: relative;
+}
+
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  border: 8px solid transparent;
+  border-bottom-color: var(--ui-border);
+  border-top: none;
+}
+
+.questions-label {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.question-btn {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: clamp(13px, 2.2vw, 15px);
+  line-height: 1.5;
+  background: var(--bg-card);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  min-height: 48px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.question-btn:hover:not(:disabled) {
+  background: var(--choice-hover);
+  border-color: var(--npc-name);
+}
+
+.question-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.question-btn.asked { opacity: 0.5; text-decoration: line-through; }
+
+.conv-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--ui-border);
+  background: var(--bg-sub);
+}
+
+/* ===== PHRASE ACQUISITION ===== */
+.phrase-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.phrase-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.phrase-popup-card {
+  background: var(--bg-sub);
+  border: 2px solid var(--correct);
+  border-radius: 8px;
+  padding: 24px 28px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: popupIn 0.4s ease-out;
+}
+
+@keyframes popupIn {
+  from { transform: scale(0.8) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.phrase-popup-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--correct);
+  text-transform: uppercase;
+}
+
+.phrase-popup-text {
+  font-size: 15px;
+  color: var(--text);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.phrase-popup-power {
+  font-size: 13px;
+  color: var(--hint);
+}
+
+/* ===== PRE-NEGOTIATION ===== */
+#screen-preneg {
+  gap: 0;
+  padding: 0;
+}
+
+.preneg-header {
+  background: var(--bg-sub);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.preneg-title {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--hint);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.preneg-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.preneg-body {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.preneg-target-card {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.preneg-portrait {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid var(--ui-border);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.preneg-info { display: flex; flex-direction: column; gap: 6px; }
+.preneg-npc-name { font-size: 18px; font-weight: 700; color: var(--npc-name); }
+.preneg-npc-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+.preneg-guard-label { font-size: 12px; color: var(--text-dim); }
+.preneg-guard-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: #222244;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.preneg-guard-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ff4757);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.phrases-section-title {
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.phrases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phrase-card {
+  background: var(--bg-card);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.phrase-card-text {
+  font-size: 14px;
+  color: var(--text);
+  font-style: italic;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.phrase-card-power {
+  font-size: 12px;
+  color: var(--hint);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phrase-card.target-match { border-color: var(--correct); }
+.phrase-card.target-match .phrase-card-power { color: var(--correct); }
+
+.preneg-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--ui-border);
+  background: var(--bg-sub);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== NEGOTIATION SCREEN ===== */
+#screen-negotiation {
+  gap: 0;
+  padding: 0;
+}
+
+.neg-header {
+  background: var(--bg-sub);
+  border-bottom: 1px solid var(--ui-border);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.neg-npc-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.neg-portrait {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--ui-border);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  transition: filter 0.4s;
+}
+
+.neg-npc-name { font-size: 15px; font-weight: 700; color: var(--npc-name); }
+.neg-turn { font-size: 11px; color: var(--text-dim); }
+
+.neg-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.stat-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: #222244;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.guard-bar-fill { background: linear-gradient(90deg, #ff6b6b, #ff4757); }
+.trust-bar-fill { background: linear-gradient(90deg, #00a8d2, #2ed8a3); }
+
+.stat-value {
+  font-size: 11px;
+  color: var(--text);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.neg-body {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.neg-speech-area {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.neg-speech-portrait {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--ui-border);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+  transition: filter 0.4s;
+}
+
+.neg-speech-bubble {
+  flex: 1;
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: clamp(14px, 2.2vw, 16px);
+  line-height: 1.8;
+  min-height: 60px;
+  cursor: pointer;
+  position: relative;
+}
+
+.neg-hint {
+  font-size: 13px;
+  color: var(--hint);
+  font-style: italic;
+  padding: 8px 12px;
+  border-left: 3px solid var(--hint);
+  background: rgba(255,165,2,0.07);
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.neg-hint.visible { opacity: 1; }
+
+.subtext-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.choices-grid.visible { opacity: 1; }
+
+.choice-btn {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: clamp(12px, 2vw, 14px);
+  line-height: 1.5;
+  background: var(--bg-card);
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  min-height: 56px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.choice-btn:hover:not(:disabled) {
+  background: var(--choice-hover);
+  border-color: var(--npc-name);
+}
+
+.choice-btn:disabled { pointer-events: none; }
+.choice-btn.correct { border-color: var(--correct) !important; background: rgba(0,210,160,0.15) !important; }
+.choice-btn.wrong { border-color: var(--fail) !important; background: rgba(255,71,87,0.15) !important; }
+
+.choice-letter {
+  font-size: 11px;
+  color: var(--hint);
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* ===== PHRASE SELECTION ===== */
+.phrase-select-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 6000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.phrase-select-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.phrase-select-card {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 480px;
+  width: 92%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.phrase-select-title {
+  font-size: 14px;
+  letter-spacing: 0.15em;
+  color: var(--correct);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.phrase-select-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.phrase-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phrase-select-btn {
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  font-family: inherit;
+  font-size: 14px;
+  font-style: italic;
+  min-height: 48px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.phrase-select-btn:hover {
+  background: var(--choice-hover);
+  border-color: var(--correct);
+}
+
+.phrase-select-btn.target-match { border-color: var(--correct); }
+.phrase-select-power { font-size: 12px; color: var(--hint); font-style: normal; flex-shrink: 0; }
+.phrase-select-power.boosted { color: var(--correct); }
+
+/* ===== PHRASE FLY ===== */
+.phrase-fly {
+  position: fixed;
+  z-index: 7000;
+  background: var(--bg-sub);
+  border: 2px solid var(--correct);
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--correct);
+  font-style: italic;
+  pointer-events: none;
+  transition: none;
+}
+
+/* ===== PHRASE BOOK ===== */
+.phrasebook-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 8000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.phrasebook-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.phrasebook-card {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 480px;
+  width: 92%;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phrasebook-title {
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: var(--hint);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.phrasebook-empty {
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 20px 0;
+  font-style: italic;
+}
+
+/* ===== CONFESSION ===== */
+#screen-confession {
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.confession-spotlight {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 70% at 50% 40%, rgba(255,255,220,0.12) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.confession-portrait {
+  font-size: 80px;
+  filter: drop-shadow(0 0 30px rgba(255,255,220,0.4));
+  opacity: 0;
+  transition: opacity 1s;
+  z-index: 1;
+}
+
+.confession-npc-name {
+  font-size: 20px;
+  color: var(--npc-name);
+  opacity: 0;
+  transition: opacity 0.8s 0.5s;
+  z-index: 1;
+}
+
+.confession-text {
+  max-width: 560px;
+  font-size: clamp(13px, 2.2vw, 16px);
+  line-height: 2;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 0 20px;
+  opacity: 0;
+  transition: opacity 0.8s;
+  z-index: 1;
+  min-height: 80px;
+  cursor: pointer;
+}
+
+.confession-continue {
+  font-size: 12px;
+  color: #444466;
+  z-index: 1;
+  margin-top: 20px;
+}
+
+/* ===== RESULT SCREEN ===== */
+#screen-result {
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.result-chapter {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.result-status {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--correct);
+  text-shadow: 0 0 20px rgba(0,210,160,0.5);
+}
+
+.result-status.fail { color: var(--fail); text-shadow: 0 0 20px rgba(255,71,87,0.5); }
+
+.result-divider {
+  width: 200px;
+  height: 1px;
+  background: var(--ui-border);
+}
+
+.result-exp-gain {
+  font-size: 20px;
+  color: var(--hint);
+}
+
+.result-levelup {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: levelUpPulse 0.5s ease-out;
+}
+
+.result-levelup.show { display: flex; }
+
+@keyframes levelUpPulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.result-levelup-label {
+  font-size: 24px;
+  color: var(--hint);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.result-levelup-text {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.result-faction {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.faction-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: var(--bg-sub);
+  border-radius: 4px;
+  border: 1px solid var(--ui-border);
+  width: 280px;
+}
+
+.faction-change { font-size: 13px; font-weight: 700; }
+.faction-change.positive { color: var(--correct); }
+.faction-change.negative { color: var(--fail); }
+
+/* ===== CHAPTER END ===== */
+#screen-chapterend {
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.chapterend-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.chapterend-text {
+  max-width: 600px;
+  font-size: clamp(14px, 2.5vw, 17px);
+  color: var(--text-dim);
+  line-height: 2;
+  font-style: italic;
+  min-height: 80px;
+  cursor: pointer;
+}
+
+.chapterend-next {
+  font-size: 22px;
+  color: var(--hint);
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.chapterend-next.show { opacity: 1; }
+
+/* ===== TUTORIAL TOAST ===== */
+.tutorial-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(26,26,46,0.95);
+  border: 1px solid var(--hint);
+  border-radius: 6px;
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--hint);
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  z-index: 9500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+.tutorial-toast.show { opacity: 1; }
+
+/* ===== FLOATING PHRASEBOOK BUTTON ===== */
+.phrasebook-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-sub);
+  border: 2px solid var(--ui-border);
+  color: var(--hint);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4000;
+  transition: border-color 0.2s, transform 0.2s;
+  display: none;
+}
+
+.phrasebook-fab.visible { display: flex; }
+.phrasebook-fab:hover { border-color: var(--hint); transform: scale(1.1); }
+
+/* ===== FAIL SCREEN ===== */
+#screen-fail {
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.fail-title {
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--fail);
+  text-shadow: 0 0 20px rgba(255,71,87,0.5);
+}
+
+.fail-desc { font-size: 16px; color: var(--text-dim); line-height: 1.8; max-width: 480px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  html, body { font-size: 14px; }
+  .location-grid { grid-template-columns: 1fr; }
+  .choices-grid { grid-template-columns: 1fr; }
+  .neg-stats { min-width: 140px; }
+  .preneg-target-card { flex-direction: column; align-items: center; text-align: center; }
+  .faction-row { width: 100%; }
+}
+
+/* ===== MISC UTILITIES ===== */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.5s ease-in; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.mission-box {
+  background: var(--bg-sub);
+  border: 1px solid rgba(139,115,85,0.5);
+  border-radius: 4px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.section-header {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(139,115,85,0.3);
+}
+
+/* ===== NEG BATTLE COUNTER (ch3 double battle) ===== */
+.neg-battle-counter {
+  font-size: 11px;
+  color: var(--hint);
+  letter-spacing: 0.1em;
+}
+
+/* ===== ENDING SCREEN ===== */
+#screen-ending {
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  padding: 40px 20px;
+  text-align: center;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at center, #0d1b3e 0%, var(--bg-main) 70%);
+}
+
+.ending-label {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--hint);
+  text-transform: uppercase;
+}
+
+.ending-title {
+  font-size: clamp(20px, 4.5vw, 30px);
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+
+.ending-text {
+  max-width: 620px;
+  font-size: clamp(13px, 2.2vw, 16px);
+  color: var(--text-dim);
+  line-height: 2;
+  text-align: left;
+  cursor: pointer;
+  min-height: 100px;
+}
+
+.ending-credits {
+  font-size: 13px;
+  color: #333355;
+  line-height: 2;
+  margin-top: 12px;
+  opacity: 0;
+  transition: opacity 1.5s;
+}
+
+.ending-credits.show { opacity: 1; }
+
+/* ===== ENDING CHOICE SCREEN ===== */
+#screen-endingchoice {
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  padding: 40px 20px;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.endingchoice-label {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--hint);
+  text-transform: uppercase;
+}
+
+.endingchoice-title {
+  font-size: clamp(18px, 4vw, 26px);
+  color: var(--text);
+}
+
+.endingchoice-desc {
+  max-width: 560px;
+  font-size: clamp(13px, 2.2vw, 15px);
+  color: var(--text-dim);
+  line-height: 1.9;
+}
+
+.ending-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.ending-card-btn {
+  text-align: left;
+  padding: 20px 22px;
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  font-family: inherit;
+  font-size: clamp(13px, 2vw, 15px);
+  line-height: 1.7;
+  min-height: 80px;
+  width: 100%;
+}
+
+.ending-card-btn:hover {
+  background: var(--choice-hover);
+  border-color: var(--npc-name);
+  transform: translateY(-2px);
+}
+
+.ending-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--npc-name);
+  margin-bottom: 6px;
+}
+
+.ending-card-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== FLASH OVERLAY ===== -->
+  <div id="flash-overlay"></div>
+
+  <!-- ===== TUTORIAL TOAST ===== -->
+  <div class="tutorial-toast" id="tutorial-toast"></div>
+
+  <!-- ===== PHRASEBOOK FAB ===== -->
+  <button class="phrasebook-fab" id="phrasebook-fab" title="フレーズ帳" aria-label="フレーズ帳を開く">📖</button>
+
+  <!-- ===== PHRASE ACQUISITION POPUP ===== -->
+  <div class="phrase-popup" id="phrase-popup">
+    <div class="phrase-popup-card">
+      <div class="phrase-popup-label">フレーズ獲得</div>
+      <div class="phrase-popup-text" id="phrase-popup-text"></div>
+      <div class="phrase-popup-power" id="phrase-popup-power"></div>
+      <button class="btn btn-primary" id="phrase-popup-close" style="margin-top:8px;">了解</button>
+    </div>
+  </div>
+
+  <!-- ===== PHRASEBOOK OVERLAY ===== -->
+  <div class="phrasebook-overlay" id="phrasebook-overlay">
+    <div class="phrasebook-card">
+      <div class="phrasebook-title">📖 フレーズ帳</div>
+      <div class="phrases-list" id="phrasebook-list"></div>
+      <button class="btn" id="phrasebook-close">閉じる</button>
+    </div>
+  </div>
+
+  <!-- ===== PHRASE SELECT OVERLAY ===== -->
+  <div class="phrase-select-overlay" id="phrase-select-overlay">
+    <div class="phrase-select-card">
+      <div class="phrase-select-title">フレーズを選択</div>
+      <div class="phrase-select-hint" id="phrase-select-hint"></div>
+      <div class="phrase-select-list" id="phrase-select-list"></div>
+      <button class="btn" id="phrase-select-skip">フレーズなしで続ける</button>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN: TITLE ===== -->
+  <section class="screen" id="screen-title" role="main">
+    <div class="title-logo">SUBTEXT</div>
+    <div class="title-sub">会話の行間を読む交渉RPG</div>
+    <div class="title-quote">「言葉の裏を読め。真実は、誰も口にしない。」</div>
+    <div class="title-buttons">
+      <button class="btn btn-primary" id="btn-newgame">NEW GAME</button>
+      <button class="btn" id="btn-continue">CONTINUE</button>
+    </div>
+    <div style="margin-top:32px; font-size:12px; color:#333355;">第1章「港の積荷」</div>
+  </section>
+
+  <!-- ===== SCREEN: CHAPTER INTRO ===== -->
+  <section class="screen" id="screen-intro">
+    <div class="intro-chapter">第1章</div>
+    <div class="intro-title">港の積荷</div>
+    <div class="intro-text-box" id="intro-text">
+    </div>
+    <div class="intro-hint" id="intro-hint">クリック/タップで続ける</div>
+    <button class="btn btn-primary hidden" id="btn-intro-continue" style="max-width:280px;">調査を開始する</button>
+  </section>
+
+  <!-- ===== SCREEN: TOWN ===== -->
+  <section class="screen" id="screen-town">
+    <div class="town-header">
+      <div class="town-header-left">
+        <div class="town-chapter-label">第1章 — 港の積荷</div>
+        <div class="town-title">ポルタ・ヴェリタス</div>
+      </div>
+      <div class="town-header-right">
+        <div class="ap-display">
+          AP: <span id="ap-dots-container"></span>
+          <span id="ap-value-text"></span>
+        </div>
+        <button class="btn" id="btn-phrasebook-town" style="padding:8px 14px; font-size:13px; min-height:40px;">📖 帳</button>
+      </div>
+    </div>
+    <div class="town-body">
+      <div class="mission-box" id="town-mission">
+        <strong style="color:var(--hint);">依頼:</strong> 商人マルコの倉庫から絹が消えた。衛兵ガルシアと交渉し、真相を明らかにせよ。
+      </div>
+      <div class="town-message" id="town-tutorial-msg" style="display:none;"></div>
+      <div class="section-header">場所を選んで情報を集める</div>
+      <div class="location-grid" id="location-grid"></div>
+      <div class="town-actions" id="town-actions">
+        <button class="btn btn-primary" id="btn-go-negotiate">交渉へ →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SCREEN: CONVERSATION ===== -->
+  <section class="screen" id="screen-conversation">
+    <div class="conv-header">
+      <div class="npc-portrait" id="conv-portrait"></div>
+      <div class="conv-npc-info">
+        <div class="conv-npc-name" id="conv-npc-name"></div>
+        <div class="conv-npc-role" id="conv-npc-role"></div>
+      </div>
+    </div>
+    <div class="conv-body">
+      <div class="speech-bubble" id="conv-speech" title="クリックでスキップ"></div>
+      <div class="questions-label" id="conv-questions-label" style="display:none;">— 何を聞く？</div>
+      <div class="question-list" id="conv-question-list"></div>
+    </div>
+    <div class="conv-footer">
+      <button class="btn" id="btn-conv-leave">← 戻る</button>
+    </div>
+  </section>
+
+  <!-- ===== SCREEN: PRE-NEGOTIATION ===== -->
+  <section class="screen" id="screen-preneg">
+    <div class="preneg-header">
+      <div class="preneg-title">交渉準備</div>
+      <div class="preneg-name">vs ガルシア</div>
+    </div>
+    <div class="preneg-body">
+      <div class="preneg-target-card">
+        <div class="preneg-portrait" id="preneg-portrait"></div>
+        <div class="preneg-info">
+          <div class="preneg-npc-name">ガルシア</div>
+          <div class="preneg-npc-desc">港の衛兵。夜間の港の管理を担当。最近、顔色が悪いと噂される。</div>
+          <div class="preneg-guard-label" style="margin-top:8px; font-size:12px; color:var(--text-dim);">ガード</div>
+          <div class="preneg-guard-bar-bg">
+            <div class="preneg-guard-bar-fill" id="preneg-guard-fill" style="width:100%;"></div>
+          </div>
+          <div style="font-size:12px; color:var(--text-dim); margin-top:2px;">80 / 80</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="phrases-section-title">所持フレーズ（<span id="preneg-phrase-count">0</span>件）</div>
+        <div class="phrases-list" id="preneg-phrases-list"></div>
+        <div id="preneg-no-phrase" style="font-size:13px; color:var(--text-dim); font-style:italic; padding:8px 0;">
+          フレーズがありません。聞き込みで情報を集めましょう。
+        </div>
+      </div>
+    </div>
+    <div class="preneg-footer">
+      <button class="btn btn-primary" id="btn-start-neg">交渉開始 →</button>
+      <button class="btn" id="btn-back-town">← 町に戻る</button>
+    </div>
+  </section>
+
+  <!-- ===== SCREEN: NEGOTIATION ===== -->
+  <section class="screen" id="screen-negotiation">
+    <div class="neg-header">
+      <div class="neg-npc-area">
+        <div class="neg-portrait" id="neg-portrait"></div>
+        <div>
+          <div class="neg-npc-name">ガルシア</div>
+          <div class="neg-turn">ターン <span id="neg-turn-num">1</span> / 10</div>
+        </div>
+      </div>
+      <div class="neg-stats">
+        <div class="stat-row">
+          <div class="stat-label">ガード</div>
+          <div class="stat-bar-bg"><div class="stat-bar-fill guard-bar-fill" id="guard-bar" style="width:100%;"></div></div>
+          <div class="stat-value" id="guard-value">80</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label">信頼度</div>
+          <div class="stat-bar-bg"><div class="stat-bar-fill trust-bar-fill" id="trust-bar" style="width:100%;"></div></div>
+          <div class="stat-value" id="trust-value">100</div>
+        </div>
+      </div>
+    </div>
+    <div class="neg-body" id="neg-body">
+      <div class="neg-speech-area">
+        <div class="neg-speech-portrait" id="neg-speech-portrait"></div>
+        <div class="neg-speech-bubble" id="neg-speech" title="クリックでスキップ"></div>
+      </div>
+      <div class="neg-hint" id="neg-hint"></div>
+      <div class="subtext-label">— サブテクストを読め</div>
+      <div class="choices-grid" id="choices-grid">
+        <button class="choice-btn" id="choice-a"><span class="choice-letter">A</span><span id="choice-a-text"></span></button>
+        <button class="choice-btn" id="choice-b"><span class="choice-letter">B</span><span id="choice-b-text"></span></button>
+        <button class="choice-btn" id="choice-c"><span class="choice-letter">C</span><span id="choice-c-text"></span></button>
+        <button class="choice-btn" id="choice-d"><span class="choice-letter">D</span><span id="choice-d-text"></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SCREEN: CONFESSION ===== -->
+  <section class="screen" id="screen-confession">
+    <div class="confession-spotlight" id="confession-spotlight"></div>
+    <div class="confession-portrait" id="confession-portrait"></div>
+    <div class="confession-npc-name" id="confession-npc-name"></div>
+    <div class="confession-text" id="confession-text" title="クリックでスキップ"></div>
+    <div class="confession-continue" id="confession-continue"></div>
+  </section>
+
+  <!-- ===== SCREEN: RESULT ===== -->
+  <section class="screen" id="screen-result">
+    <div class="result-chapter">第1章 クリア</div>
+    <div class="result-status" id="result-status">TRUTH REVEALED</div>
+    <div class="result-divider"></div>
+    <div class="result-exp-gain" id="result-exp">+150 EXP</div>
+    <div class="result-levelup" id="result-levelup">
+      <div class="result-levelup-label">LEVEL UP!</div>
+      <div class="result-levelup-text" id="result-levelup-text"></div>
+    </div>
+    <div class="result-faction">
+      <div class="section-header" style="text-align:center; border:none;">勢力変動</div>
+      <div class="faction-row">
+        <span>領主府</span>
+        <span class="faction-change negative" id="result-faction-1">-10</span>
+      </div>
+      <div class="faction-row">
+        <span>商人ギルド</span>
+        <span class="faction-change positive" id="result-faction-2">+5</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-to-chapterend" style="max-width:280px; margin-top:12px;">続きを読む →</button>
+  </section>
+
+  <!-- ===== SCREEN: CHAPTER END ===== -->
+  <section class="screen" id="screen-chapterend">
+    <div class="chapterend-label" id="chapterend-label">第1章 終幕</div>
+    <div class="chapterend-text" id="chapterend-text"></div>
+    <div class="chapterend-next" id="chapterend-next">第2章へ続く…</div>
+    <button class="btn hidden" id="btn-chapterend-done" style="max-width:280px;">タイトルに戻る</button>
+  </section>
+
+  <!-- ===== SCREEN: ENDING CHOICE (ch5) ===== -->
+  <section class="screen" id="screen-endingchoice">
+    <div class="endingchoice-label">第5章 — 最終選択</div>
+    <div class="endingchoice-title">真実をどう扱うか</div>
+    <div class="endingchoice-desc">全ての証拠と告白が揃った。読み手よ、この真実をどう使うか、最後の判断を下せ。</div>
+    <div class="ending-cards" id="ending-cards"></div>
+  </section>
+
+  <!-- ===== SCREEN: ENDING ===== -->
+  <section class="screen" id="screen-ending">
+    <div class="ending-label" id="ending-label">エンディング</div>
+    <div class="ending-title" id="ending-title"></div>
+    <div class="ending-text" id="ending-text"></div>
+    <div class="ending-credits" id="ending-credits">
+      SUBTEXT<br>
+      会話の行間を読む交渉RPG<br><br>
+      制作: 読み手工房<br><br>
+      「言葉の裏を読め。真実は、誰も口にしない。」
+    </div>
+    <button class="btn btn-primary hidden" id="btn-ending-done" style="max-width:280px; margin-top:16px;">タイトルに戻る</button>
+  </section>
+
+  <!-- ===== SCREEN: FAIL ===== -->
+  <section class="screen" id="screen-fail">
+    <div class="fail-title">FAILED</div>
+    <div class="fail-desc" id="fail-desc">ガルシアの心を閉ざさせてしまった。もう一度試みよう。</div>
+    <button class="btn btn-primary" id="btn-retry" style="max-width:280px; margin-top:12px;">もう一度挑戦する</button>
+    <button class="btn" id="btn-fail-town" style="max-width:280px;">町に戻る</button>
+  </section>
+
+</div>
+
+<script>
+'use strict';
+
+// ===================================================================
+//  GAME DATA
+// ===================================================================
+const CHAPTER1 = {
+  ap: 3,
+  locations: [
+    {
+      id: 'warehouse',
+      name: 'マルコの倉庫',
+      icon: '📦',
+      npcId: 'marco',
+      desc: '依頼者マルコが待つ',
+    },
+    {
+      id: 'dock',
+      name: '港の桟橋',
+      icon: '⚓',
+      npcId: 'garcia',
+      desc: '衛兵ガルシアが巡回中',
+    },
+    {
+      id: 'tavern',
+      name: '海辺の酒場',
+      icon: '🍺',
+      npcId: 'teresa',
+      desc: '女将テレサが知っているかも',
+    },
+    {
+      id: 'church',
+      name: '聖堂',
+      icon: '⛪',
+      npcId: 'orlando',
+      desc: '司祭オルランドに告解',
+    },
+  ],
+  npcs: {
+    marco: {
+      name: '商人マルコ',
+      role: '絹商人・依頼者',
+      emoji: '📦',
+      greeting: 'ああ、読み手殿。来てくれたか。見ての通りだ、倉庫は空っぽ。あの絹はギルドへの納品分だったんだ…。',
+      questions: [
+        {
+          text: '積荷はいつ届くはずだった？',
+          answer: '昨夜の夜半だ。船は予定通り入港した。荷降ろしまでは確認したんだが…朝になったら倉庫が空だった。',
+          phrase: { id: 'marco_1', text: '荷降ろしまでは確認した', power: 12, target: 'garcia' },
+        },
+        {
+          text: '誰か怪しい人物に心当たりは？',
+          answer: '分からん。だが…夜間の港の管理は衛兵のガルシアの担当だ。あいつに聞いてみてくれ。',
+          phrase: { id: 'marco_2', text: '夜間の港はガルシアの担当', power: 18, target: 'garcia' },
+        },
+        {
+          text: '積荷の価値はどれくらい？',
+          answer: '金貨200枚相当だ。…正直、これが戻らなければ俺は破産する。頼む、読み手殿。',
+          phrase: null,
+        },
+      ],
+    },
+    garcia: {
+      name: '衛兵ガルシア',
+      role: '港の夜間警備隊長',
+      emoji: '⚓',
+      greeting: '何か用か？ 俺は忙しいんだ。巡回の報告書を書かなきゃならん。',
+      questions: [
+        {
+          text: '昨夜の港の様子を教えてくれ。',
+          answer: 'いつも通りだ。特に変わったことはない。船が入って、荷を降ろして、俺は見回りをしていた。それだけだ。',
+          phrase: { id: 'garcia_1', text: '特に変わったことはない', power: 15, target: 'garcia' },
+        },
+        {
+          text: 'マルコの積荷を見たか？',
+          answer: 'ああ、検問で確認した。高級な絹だろ？ 通関の書類に判を押したよ。…それがどうした。',
+          phrase: { id: 'garcia_2', text: '検問で確認して判を押した', power: 20, target: 'garcia' },
+        },
+        {
+          text: '最近、困っていることはないか？',
+          answer: '…困っている？ 何でそんなことを聞く。俺は元気だ。仕事もちゃんとやっている。余計なお世話だ。',
+          phrase: { id: 'garcia_3', text: '余計なお世話だ（過剰な防衛反応）', power: 10, target: 'garcia' },
+          setsFlag: 'garcia_defensive',
+        },
+      ],
+    },
+    teresa: {
+      name: '酒場の女将テレサ',
+      role: '海辺の酒場「碇亭」女将',
+      emoji: '🍺',
+      greeting: 'あら、読み手さん。珍しいお客ね。何か飲んでいく？ …それとも、仕事かしら。',
+      questions: [
+        {
+          text: '昨夜、この辺りで何かあった？',
+          answer: '昨夜？ そうねえ…いつもより港が騒がしかったわ。深夜に荷車の音がしてね。こんな時間に、と思ったけど。',
+          phrase: { id: 'teresa_1', text: '深夜に荷車の音がした', power: 18, target: 'garcia' },
+        },
+        {
+          text: '衛兵のガルシアをどう思う？',
+          answer: 'ガルシアねえ…真面目な男よ。でも最近、顔色が悪いわ。何か悩みを抱えてるみたい。…うちにも飲みに来なくなったし。',
+          phrase: { id: 'teresa_2', text: '最近ガルシアの顔色が悪い', power: 12, target: 'garcia' },
+        },
+        {
+          text: '影の舟について何か知ってる？',
+          answer: '…その名前、あまり大きな声で言わない方がいいわ。私は何も知らない。知りたくもない。…ただ、港の近くで見慣れない船が停泊してることは、ある。',
+          phrase: { id: 'teresa_3', text: '見慣れない船が港に停泊', power: 10, target: 'all' },
+        },
+      ],
+    },
+    orlando: {
+      name: '司祭オルランド',
+      role: '聖堂の司祭',
+      emoji: '⛪',
+      greeting: 'おお、読み手殿。神のご加護がありますように。…何かお悩みですかな？',
+      questions: [
+        {
+          text: '昨夜、教会から港は見えるか？',
+          answer: 'ええ、鐘楼からは港が一望できます。…ですが昨夜は祈祷の時間でしたので、外は見ておりません。',
+          phrase: { id: 'orlando_1', text: '鐘楼から港が一望できる', power: 8, target: 'all' },
+        },
+        {
+          text: '最近、告解で変わったことは？',
+          answer: '告解の内容は神聖なもの、お話しすることはできません。…ただ、人は罪を犯す時、必ず理由があるものです。',
+          phrase: { id: 'orlando_2', text: '人は罪を犯す時、必ず理由がある', power: 15, target: 'garcia', type: 'secret' },
+          requiresFlag: 'garcia_defensive',
+        },
+        {
+          text: 'ガルシアの家族のことを知っているか？',
+          answer: 'ガルシアの奥方は…半年ほど前から体調を崩されています。教会でも祈りを捧げておりますが…医療費は、相当かかっているようです。',
+          phrase: { id: 'orlando_3', text: 'ガルシアの妻は半年前から病気', power: 25, target: 'garcia', type: 'secret' },
+        },
+      ],
+    },
+  },
+  negotiation: {
+    target: 'garcia',
+    maxGuard: 80,
+    maxTurns: 10,
+    initialTrust: 100,
+    penaltyPerWrong: 20,
+    consecutiveMissFail: 2,
+    turns: [
+      {
+        speech: '荷物のことか？ 俺は何も見ていない。いつも通り巡回していただけだ。',
+        hint: '「いつも通り」を不自然に強調している。',
+        expression: 'nervous',
+        choices: [
+          { text: '本当に何も知らない', correct: false },
+          { text: '見たが直接は関与していない', correct: false },
+          { text: '犯人を目撃したが脅されて黙っている', correct: false },
+          { text: '自分が関与している。「いつも通り」を強調して正常性を装っている', correct: true },
+        ],
+        correctDamage: 20,
+      },
+      {
+        speech: '…なぜ俺を疑う？ 衛兵が荷を盗むわけがないだろう。俺には何の得もない。',
+        hint: '「何の得もない」と自ら金銭の話題を持ち出した。',
+        expression: 'angry',
+        choices: [
+          { text: '本当に動機がない', correct: false },
+          { text: '金銭的動機から目を逸らそうとしている', correct: true },
+          { text: '共犯者をかばっている', correct: false },
+          { text: '衛兵の立場を盾にしている', correct: false },
+        ],
+        correctDamage: 15,
+      },
+      {
+        speech: 'いい加減にしてくれ。俺は家族を養うために真面目に働いているんだ。これ以上の侮辱は許さんぞ。',
+        hint: '「家族を養う」だけが嘘ではない。動機が透けている。',
+        expression: 'angry',
+        choices: [
+          { text: '正直者の怒り', correct: false },
+          { text: '同情を引こうとしている', correct: false },
+          { text: '「家族を養う」に本音が漏れている。金が必要だった動機の告白', correct: true },
+          { text: '脅しで追及を止めさせようとしている', correct: false },
+        ],
+        correctDamage: 25,
+      },
+      {
+        speech: '…もういい。俺がどう言っても、あんたは信じないんだろう。好きにしてくれ。',
+        hint: '声のトーンが落ちた。あと一押し。',
+        expression: 'sad',
+        choices: [
+          { text: '諦めの境地。戦う気力が尽きた', correct: true },
+          { text: '諦めたふりをした策略', correct: false },
+          { text: '本音を言いたいがまだ踏み切れない', correct: false },
+          { text: '時間稼ぎ', correct: false },
+        ],
+        correctDamage: 20,
+      },
+    ],
+    confession: '…分かったよ。もう隠せない。俺がやった。あの絹は…「影の舟」に流した。半年前、女房が病気になった。薬代が払えなくて…そんな時、奴らが声をかけてきたんだ。「荷物を一つ見逃すだけでいい。報酬は金貨50枚」と。最初は一度きりのつもりだった。だが、一度手を染めたら…もう戻れなかった。マルコには悪いと思っている。だが、家族を見捨てることはできなかった。…俺を、どうするつもりだ？',
+    reward: { exp: 150, factions: { '領主府': -10, '商人ギルド': +5 } },
+  },
+  chapterEndText: 'ガルシアは全てを語った。「影の舟」と呼ばれる密輸組織が、この港に根を張っている。ガルシアは家族の借金のために、積荷を横流ししていた。真実はいつも、誰かの痛みの上に成り立っている。しかし、これはまだ序章に過ぎない。この町には、もっと深い嘘が眠っている――。',
+  introText: '交易都市「ポルタ・ヴェリタス」。夜明け前、商人マルコの倉庫が荒らされた。消えた高価な絹の行方を追い、港の衛兵ガルシアとの交渉に臨め。言葉の裏を読め――真実は、誰も口にしない。',
+};
+
+// ===================================================================
+//  CHAPTER 2 DATA — 「消えた令嬢」
+// ===================================================================
+const CHAPTER2 = {
+  ap: 4,
+  title: '消えた令嬢',
+  locationName: 'ポルタ・ヴェリタス（商業区）',
+  mission: 'ギルド長の娘エレナが失踪した。依頼者マルグリットと交渉し、「誘拐」の真相を明らかにせよ。',
+  introText: '商人ギルド長マルグリットの娘エレナが三日前から行方不明だという。「誘拐」と騒ぐ母の背後に、隠された真実がある。娘は本当に連れ去られたのか――それとも、自ら飛び立ったのか。',
+  locations: [
+    { id: 'guild_hq', name: 'ギルド本部', icon: '🏛️', npcId: 'marguerite', desc: 'ギルド長マルグリットが待つ' },
+    { id: 'cathedral_yard', name: '聖堂裏庭', icon: '🌿', npcId: 'ria', desc: '修道女リアがいる' },
+    { id: 'harbor_inn', name: '港の宿屋', icon: '🛏️', npcId: 'dario', desc: '宿屋のダリオ' },
+    { id: 'back_alley', name: '裏通り', icon: '🐀', npcId: 'rat', desc: '情報屋「鼠」の縄張り' },
+    { id: 'elena_room', name: "エレナの部屋", icon: '🪟', npcId: 'sofia', desc: '侍女ソフィアが片づけている' },
+  ],
+  npcs: {
+    marguerite: {
+      name: 'マルグリット',
+      role: 'ギルド長・依頼者',
+      emoji: '👩',
+      greeting: '読み手殿、来てくれたか。…娘が、エレナがいなくなった。三日前の夜からだ。何としても見つけ出してほしい。',
+      questions: [
+        {
+          text: 'エレナが消えた日、何か変わったことは？',
+          answer: '…いいえ、いつも通りの夜だった。夕食を一緒にとって、エレナは部屋に戻った。朝になって、部屋はもぬけの殻だった。…窓が開いていた。',
+          phrase: { id: 'marg_1', text: '窓が開いていた', power: 12, target: 'marguerite' },
+        },
+        {
+          text: 'エレナに最近、悩みはなかったか？',
+          answer: 'あの子に悩みなど…何不自由なく育ててきた。ギルド長の娘として、最高の教育も、最高の暮らしも与えてきた。…悩むことなど、あるはずがない。',
+          phrase: { id: 'marg_2', text: '悩むことなどあるはずがない（断言）', power: 18, target: 'marguerite' },
+          setsFlag: 'marguerite_denial',
+        },
+        {
+          text: '犯人の心当たりは？',
+          answer: 'この港には怪しい連中がいる。影の舟か…それとも教会の誰かかもしれない。何でもいい、早く連れ戻してくれ。',
+          phrase: { id: 'marg_3', text: 'マルグリットは影の舟か教会を疑っている', power: 10, target: 'marguerite' },
+        },
+      ],
+    },
+    ria: {
+      name: '修道女リア',
+      role: '聖堂付き修道女',
+      emoji: '🙏',
+      greeting: '…読み手さま。エレナさまのことでしょうか。',
+      questions: [
+        {
+          text: 'エレナと親しかったのか？',
+          answer: 'はい…エレナさまはよく聖堂にいらして、私に話しかけてくださいました。悩みをよく打ち明けてくださって。',
+          phrase: { id: 'ria_1', text: 'エレナは聖堂でリアに相談していた', power: 15, target: 'marguerite' },
+        },
+        {
+          text: 'エレナはどんな悩みを話していた？',
+          answer: '…それは、私の口からは。でも…エレナさまは、「自分の人生を自分で決めたい」とよく仰っていました。鳥が籠の外を見るような目で、遠くを見ながら。',
+          phrase: { id: 'ria_2', text: 'エレナは自分の人生を自分で決めたかった', power: 25, target: 'marguerite', type: 'secret' },
+          requiresFlag: 'marguerite_denial',
+        },
+        {
+          text: '最後にエレナに会ったのはいつ？',
+          answer: '三日前の夕方です。聖堂の裏庭で少し話して…別れ際に、「ありがとう、リア。元気でね」と仰いました。今思えば、お別れの言葉だったのかも。…裏口から旅装の人影が出るのを見たような気もします。',
+          phrase: { id: 'ria_3', text: '聖堂の裏口から旅装の人影', power: 20, target: 'marguerite' },
+        },
+      ],
+    },
+    dario: {
+      name: '宿屋のダリオ',
+      role: '港の宿屋「夜明け亭」主人',
+      emoji: '🛏️',
+      greeting: 'いらっしゃい。部屋が要るかい？ …ああ、ギルド長の娘さんの件か。',
+      questions: [
+        {
+          text: '三日前の夜、宿に変わった客は？',
+          answer: 'ああ、いたね。フードを目深に被った若い女性。一人でね。珍しいなと思ったが、金はちゃんと払ってくれたし。',
+          phrase: { id: 'dario_1', text: '三日前の夜、フード姿の若い女性が宿泊', power: 22, target: 'marguerite' },
+        },
+        {
+          text: 'その女性はどこへ向かったかわかるか？',
+          answer: '朝早くに出て行ったよ。出がけに馬車の手配を頼まれてね。行き先は…自由都市リベルタだったよ。一人で旅をするには遠い場所だが。',
+          phrase: { id: 'dario_2', text: 'フードの女性は自由都市リベルタへ向かった', power: 18, target: 'marguerite' },
+        },
+        {
+          text: 'マルグリットのことを知っているか？',
+          answer: 'ギルド長さんかい。…まあ、ここだけの話、エレナさんの縁談を急いで進めてたって噂があったよ。相手は年の離れた商会頭だとか。あの娘さん、嫌がってたみたいだけどね。',
+          phrase: { id: 'dario_3', text: 'マルグリットはエレナの縁談を進めていた', power: 28, target: 'marguerite', type: 'secret' },
+        },
+      ],
+    },
+    rat: {
+      name: '情報屋「鼠」',
+      role: '裏通りの情報屋',
+      emoji: '🐀',
+      greeting: 'やあ読み手さん。何が知りたいんで？ 情報はただじゃないが…今日は特別に。',
+      questions: [
+        {
+          text: '影の舟はエレナの件に絡んでいるか？',
+          answer: '絡んでないよ。確認したけど、身代金の要求も接触もない。誘拐じゃないね、間違いなく。組織が動いてたら俺の耳に入る。',
+          phrase: { id: 'rat_1', text: '影の舟は関与していない（身代金要求なし）', power: 15, target: 'marguerite' },
+        },
+        {
+          text: 'マルグリットとエレナの関係は？',
+          answer: 'マルグリットさんはねえ…娘の意見を聞いたことがないんだよ。服も、友人も、縁談も、全部母親が決める。エレナちゃんが何を望むかは、問題じゃなかったんだ。',
+          phrase: { id: 'rat_2', text: 'マルグリットはエレナの意見を聞いていない', power: 20, target: 'marguerite' },
+        },
+        {
+          text: 'エレナはどうやって逃げた？',
+          answer: '馬車代は聖堂の寄付金から出てるよ。司祭さんが融通してくれたんだろうね。エレナちゃんにゃ聖堂のシスターに友人がいたから。',
+          phrase: { id: 'rat_3', text: '馬車代は聖堂の寄付金から出た', power: 22, target: 'marguerite' },
+        },
+      ],
+    },
+    sofia: {
+      name: '侍女ソフィア',
+      role: 'エレナ付きの侍女',
+      emoji: '🪟',
+      greeting: '…読み手殿。エレナさまの部屋を片づけていたところです。',
+      questions: [
+        {
+          text: '部屋に何か残っていたか？',
+          answer: 'エレナさまの旅行鞄と、冬の着替えが三日分ほどなくなっています。…窓から出たにしては、持ち物が多すぎます。',
+          phrase: { id: 'sofia_1', text: 'エレナの旅行鞄と着替えがなくなっていた', power: 30, target: 'marguerite', type: 'secret' },
+        },
+        {
+          text: 'マルグリットはどんな様子だった？',
+          answer: '…マルグリットさまは、私が旅行鞄のことを報告した時、取り乱されませんでした。普通なら「どこに持って行ったの」と聞くはずなのに。まるで…もう知っておられるようでした。',
+          phrase: { id: 'sofia_2', text: 'マルグリットは旅行鞄の件を聞いても取り乱さなかった', power: 32, target: 'marguerite', type: 'secret' },
+          setsFlag: 'marguerite_composure',
+        },
+        {
+          text: 'マルグリットは最初に何をした？',
+          answer: '翌朝、一番先にエレナさまの部屋に入ったのはマルグリットさまでした。私より先に。……それから少しして、「誘拐された」と騒ぎ始めたんです。',
+          phrase: { id: 'sofia_3', text: 'マルグリットが一番にエレナの部屋を確認した', power: 15, target: 'marguerite' },
+        },
+      ],
+    },
+  },
+  negotiation: {
+    target: 'marguerite',
+    maxGuard: 100,
+    maxTurns: 8,
+    initialTrust: 100,
+    penaltyPerWrong: 20,
+    consecutiveMissFail: 2,
+    turns: [
+      {
+        speech: '読み手殿、調査の成果は？ 娘を攫った犯人の目星はついたのか？',
+        hint: '「攫った」という前提を強く押し出している。',
+        expression: 'nervous',
+        choices: [
+          { text: '本当に誘拐犯を探している', correct: false },
+          { text: '捜査方向を誘拐に誘導しようとしている', correct: true },
+          { text: '不安から早く解決を求めている', correct: false },
+          { text: '外部の敵に責任を転嫁したい', correct: false },
+        ],
+        correctDamage: 20,
+      },
+      {
+        speech: 'まさか…エレナが自分で出て行ったと？ 馬鹿な。あの子にそんな度胸があるはずがない。私が守ってきたのだから。',
+        hint: '「守る」と「支配」を混同している。管理が完璧だったと信じたい。',
+        expression: 'angry',
+        choices: [
+          { text: '本当に娘の行動力を信じていない', correct: false },
+          { text: '守ると支配を混同。管理が完璧だと信じたい', correct: true },
+          { text: '娘を信用していない正直な感情', correct: false },
+          { text: '犯人への怒りを娘に向けている', correct: false },
+        ],
+        correctDamage: 20,
+      },
+      {
+        speech: '…縁談のことか。あれはエレナのためを思ってのことだ。ギルド長の娘にふさわしい相手を選んだ。あの子もいずれ分かる。',
+        hint: '世間体とギルドの利害を「娘のため」に置き換えている。',
+        expression: 'nervous',
+        choices: [
+          { text: '本当に娘のことを思っている', correct: false },
+          { text: '世間体とギルドの利害を娘のために置き換えている', correct: true },
+          { text: '縁談に反省はない正直な答え', correct: false },
+          { text: '娘が戻れば丸く収まると思っている', correct: false },
+        ],
+        correctDamage: 25,
+      },
+      {
+        speech: '…手紙は、あった。エレナが置いていった。「お母さま、ごめんなさい。でも私は鳥籠の中では歌えません」…と。だが、それでも私は…。',
+        hint: '全てを知っていた。誘拐と偽ることで非を認めず娘を連れ戻したかった。',
+        expression: 'sad',
+        choices: [
+          { text: '手紙を読んで初めて気づいた', correct: false },
+          { text: '手紙の意味が理解できなかった', correct: false },
+          { text: '全てを知っていた。誘拐と偽ることで非を認めず娘を連れ戻したかった', correct: true },
+          { text: '娘への怒りを隠している', correct: false },
+        ],
+        correctDamage: 35,
+      },
+    ],
+    confession: '…そうだ。私は…知っていた。エレナが自分で出て行ったことも。手紙を読んだ時、分かっていた。でも…認められなかった。私のやってきたことが間違いだったと認めれば、私は…何のためにここまで来たのか分からなくなる。ギルドを守るために、人脈のために、娘を道具のように…そうじゃない、そうじゃないはずだったんだ。（長い沈黙）…読み手殿。あの子は、無事なのか？ それだけでいい。無事だと…教えてくれ。',
+    reward: { exp: 200, factions: { '商人ギルド': +10, '領主府': -5 } },
+  },
+  synthesisRecipes: [
+    {
+      needs: ['dario_1', 'ria_3'],
+      result: { id: 'ch2_synth_1', text: '一致: フード女性と旅装の人影は同一人物 — エレナは聖堂経由で宿屋へ', power: 38, target: 'marguerite' },
+    },
+    {
+      needs: ['sofia_1', 'marg_1'],
+      result: { id: 'ch2_synth_2', text: '矛盾: 窓から旅行鞄を持ち出すのは不自然。玄関から出た', power: 40, target: 'marguerite' },
+    },
+    {
+      needs: ['sofia_2', 'marg_2'],
+      result: { id: 'ch2_synth_3', text: '矛盾: 悩みなどないと断言した母が、鞄の件を聞いても取り乱さなかった', power: 45, target: 'marguerite' },
+    },
+  ],
+  chapterEndText: 'マルグリットは全てを知っていながら「誘拐」を演じていた。娘は自らの意志でリベルタへ旅立ち、今頃は自由の空の下にいる。マルグリットは長い沈黙の後、手紙を手に取った。その手が微かに震えていた。――そして読み手は知る。この町の嘘は、港の倉庫だけにとどまらない。商人ギルドの帳簿の奥に、さらに深い秘密が眠っている。',
+};
+
+// ===================================================================
+//  CHAPTER 3 DATA — 「偽りの同盟」
+// ===================================================================
+const CHAPTER3 = {
+  ap: 5,
+  title: '偽りの同盟',
+  locationName: 'ポルタ・ヴェリタス（領主府区）',
+  mission: '領主ヴァレンティンとマルグリットの秘密協定を暴け。交渉は二連戦だ。',
+  introText: '領主ヴァレンティンと商人ギルドは表向き友好関係にある。だが、その裏に密輸組織「影の舟」との癒着が浮かぶ。同盟の真の姿を暴くため、二人との交渉に臨め。',
+  locations: [
+    { id: 'lords_hall', name: '領主の間', icon: '👑', npcId: 'valentin', desc: '領主ヴァレンティンが謁見中' },
+    { id: 'guild_archive', name: 'ギルド書庫', icon: '📚', npcId: 'marguerite_ch3', desc: 'マルグリットが書類を確認中' },
+    { id: 'barracks', name: '衛兵詰所', icon: '⚔️', npcId: 'leon', desc: '衛兵隊長レオンがいる' },
+    { id: 'market', name: '市場の商館', icon: '💰', npcId: 'pietro', desc: '商人ピエトロが取引中' },
+    { id: 'fog_contact', name: '霧の接触場所', icon: '🌫️', npcId: 'fog_messenger', desc: '霧の密使が現れるかもしれない' },
+  ],
+  npcs: {
+    valentin: {
+      name: '領主ヴァレンティン',
+      role: 'ポルタ・ヴェリタス領主',
+      emoji: '👑',
+      greeting: '読み手か。…なんの用だ。私は忙しい。この町の秩序を保つために、日々奔走しているのだ。',
+      questions: [
+        {
+          text: '影の舟について何か知っているか？',
+          answer: '…知らん。密輸組織など、私には関係ない。衛兵が取り締まっているはずだ。',
+          phrase: { id: 'val_1', text: 'ヴァレンティンは影の舟について「知らない」と言い切った', power: 15, target: 'valentin' },
+        },
+        {
+          text: '夜間の港の監視体制はどうなっている？',
+          answer: 'それは衛兵隊長レオンが管理している。私が直接関与する必要はない。…適切に行われているはずだ。',
+          phrase: { id: 'val_2', text: 'ヴァレンティンは夜間港の監視を「適切に行われているはず」と他人事のように語った', power: 20, target: 'valentin' },
+          setsFlag: 'valentin_distancing',
+        },
+        {
+          text: '商人ギルドとはどんな関係か？',
+          answer: '互いに協力し合う関係だ。ギルドは税を納め、領主府は秩序を提供する。…ただそれだけのことだ。',
+          phrase: { id: 'val_3', text: 'ヴァレンティンはギルドとの関係を「ただそれだけ」と過度に単純化した', power: 18, target: 'valentin' },
+        },
+      ],
+    },
+    marguerite_ch3: {
+      name: 'マルグリット',
+      role: 'ギルド長（第3章）',
+      emoji: '👩',
+      greeting: '読み手殿、またあなたか。…エレナのことは、まだ引きずっているよ。でも今は、別の問題が。',
+      questions: [
+        {
+          text: 'ギルドと領主府の取り決めは？',
+          answer: '…公式な協定は公開されている。税率、通関手続き、それだけだ。それ以上のことは…言えない。',
+          phrase: { id: 'marg_ch3_1', text: 'マルグリットは「それ以上のことは言えない」と口を噤んだ', power: 22, target: 'marguerite_ch3' },
+        },
+        {
+          text: '裏帳簿の存在を知っているか？',
+          answer: '…裏帳簿？ 何の話だ。そんなものは存在しない。',
+          phrase: { id: 'marg_ch3_2', text: 'マルグリットは裏帳簿の存在を強く否定した', power: 28, target: 'marguerite_ch3' },
+          setsFlag: 'marguerite_ledger_denial',
+        },
+        {
+          text: '港の密輸ルートを誰が管理している？',
+          answer: '…それを私に聞くのか。…私は知らない。ただ、誰かが管理しているとすれば、それは長年この港に関わってきた者だろう。',
+          phrase: { id: 'marg_ch3_3', text: 'マルグリットは密輸管理者を「長年この港に関わってきた者」とほのめかした', power: 25, target: 'marguerite_ch3' },
+        },
+      ],
+    },
+    leon: {
+      name: '衛兵隊長レオン',
+      role: '領主府衛兵隊長',
+      emoji: '⚔️',
+      greeting: '読み手か。何か調査の手伝いが必要か？ 俺にできることなら。',
+      questions: [
+        {
+          text: '夜間の港の巡回は誰が担当している？',
+          answer: '通常は担当衛兵を割り当てている。だが…特定の夜は「巡回不要」という命令が上から来ることがある。理由は聞かされない。',
+          phrase: { id: 'leon_1', text: '特定の夜に「巡回不要」命令が領主府から来る', power: 35, target: 'valentin' },
+        },
+        {
+          text: 'ヴァレンティンの様子はどうだ？',
+          answer: '…最近、月に一度、深夜に領主邸に商船の者が訪ねてくる。それだけは言える。私は見なかったことにしているが。',
+          phrase: { id: 'leon_2', text: '月に一度、深夜に商船の者が領主邸を訪れる', power: 30, target: 'valentin', type: 'secret' },
+        },
+      ],
+    },
+    pietro: {
+      name: '商人ピエトロ',
+      role: '港湾商会の中堅商人',
+      emoji: '💰',
+      greeting: '読み手殿。何かご入り用で？ …ああ、調査ですか。では少しだけ。',
+      questions: [
+        {
+          text: '港の荷物管理に不審な点はあるか？',
+          answer: '特定の船の荷物が、通関記録とずれることがある。書類は正式なものだが…数が合わない。誰かが調整している。',
+          phrase: { id: 'pietro_1', text: '通関記録と実際の荷物の数が合わない', power: 28, target: 'valentin' },
+        },
+        {
+          text: 'ギルド長マルグリットの動きは？',
+          answer: 'マルグリットさんは最近、ギルドの帳簿に新しい書式を導入した。旧来の帳簿は廃棄されている。…何かを隠したいのかもしれない。',
+          phrase: { id: 'pietro_2', text: 'マルグリットは旧来の帳簿を廃棄した', power: 32, target: 'marguerite_ch3', type: 'secret' },
+          requiresFlag: 'marguerite_ledger_denial',
+        },
+      ],
+    },
+    fog_messenger: {
+      name: '霧の密使',
+      role: '密輸組織「霧」の連絡員',
+      emoji: '🌫️',
+      greeting: '…読み手か。珍しい。我々に近づく者はあまりいない。',
+      questions: [
+        {
+          text: '「霧」とは何者だ？',
+          answer: '…我々は便宜上そう呼ばれている。組織というより、利害の一致した者たちの緩やかな繋がりだ。領主も、ギルドも、我々なしには港が回らない。',
+          phrase: { id: 'fog_1', text: '「霧」は領主とギルドの双方と繋がっている', power: 40, target: 'valentin' },
+        },
+        {
+          text: '頭目「霧」とは会えるか？',
+          answer: '…それは難しい。だが、あなたが真実を求めているなら、地下の帳簿番を探せ。全てを知っている老人がいる。',
+          phrase: { id: 'fog_2', text: '全てを知る帳簿番の老人が地下にいる', power: 35, target: 'valentin', type: 'secret' },
+          setsFlag: 'found_frederico_hint',
+        },
+      ],
+    },
+  },
+  // 連戦: 1戦目ヴァレンティン、2戦目マルグリット
+  negotiation: {
+    battles: [
+      {
+        target: 'valentin',
+        targetName: 'ヴァレンティン',
+        targetEmoji: '👑',
+        targetDesc: '領主。表向きは秩序の守護者だが、密輸組織への黙認料で蓄財している。',
+        maxGuard: 90,
+        maxTurns: 8,
+        initialTrust: 100,
+        penaltyPerWrong: 20,
+        consecutiveMissFail: 2,
+        turns: [
+          {
+            speech: '何が言いたい？ 私は正当な課税と秩序維持を行っているだけだ。',
+            hint: '「正当な」を強調しすぎている。',
+            expression: 'nervous',
+            choices: [
+              { text: '本当に正当だと思っている', correct: false },
+              { text: '正当性を強調して疑惑を先手で否定している', correct: true },
+              { text: '課税の正当性を誇示したい', correct: false },
+              { text: '読み手への威嚇', correct: false },
+            ],
+            correctDamage: 22,
+          },
+          {
+            speech: '密輸？ そんなものは私の管轄外だ。衛兵がきちんと処理している。証拠があるというなら見せてもらおうか。',
+            hint: '「証拠があるなら」と条件をつけた。証拠を恐れている。',
+            expression: 'angry',
+            choices: [
+              { text: '本当に証拠を求めている', correct: false },
+              { text: '証拠を恐れているが、ないと見込んで強気に出ている', correct: true },
+              { text: '法的手続きを求めている', correct: false },
+              { text: '時間を稼いで証拠を隠そうとしている', correct: false },
+            ],
+            correctDamage: 25,
+          },
+          {
+            speech: '…巡回の免除？ それは港の混乱を避けるための措置だ。特定の船が入る時は慎重に対応する必要がある。それだけだ。',
+            hint: '「慎重な対応」が口からこぼれた。密輸船を認識していた。',
+            expression: 'nervous',
+            choices: [
+              { text: '本当に港の安全管理の話をしている', correct: false },
+              { text: '密輸船の入港を知りながら衛兵を意図的に外した', correct: true },
+              { text: 'セキュリティ上の理由で詳細を隠している', correct: false },
+              { text: '巡回免除は一般的な手続きだと言いたい', correct: false },
+            ],
+            correctDamage: 30,
+          },
+          {
+            speech: '…わかった。もう十分だろう。私も…この立場に来るまで、汚れた手も使った。だが、この町は今まで通りに回っている。それが全てではないのか。',
+            hint: '開き直り。秩序維持という自己正当化に縋っている。',
+            expression: 'sad',
+            choices: [
+              { text: '本当に反省している', correct: false },
+              { text: '罪を認めたうえで秩序という大義で正当化しようとしている', correct: true },
+              { text: '疲れて諦めた', correct: false },
+              { text: '交渉を終わらせたい', correct: false },
+            ],
+            correctDamage: 13,
+          },
+        ],
+        confession: '…そうだ。黙認料を受け取っていた。「霧」が港に入る夜、衛兵を引かせた。月に一度の小遣い稼ぎのつもりだった。だが気づけば十年が経っていた。この町が豊かなのは、密輸のおかげでもある。それが嘘だとは言えない。……だがマルグリットは違う。あの女は黙認料では満足しなかった。帳簿を手に入れ、ルートを乗っ取ろうとしている。私は道具にされていたんだ。',
+      },
+      {
+        target: 'marguerite_ch3',
+        targetName: 'マルグリット',
+        targetEmoji: '👩',
+        targetDesc: 'ギルド長。ヴァレンティンの告白を聞いた今、彼女の真意を問い質す時だ。',
+        maxGuard: 95,
+        maxTurns: 8,
+        initialTrust: 100,
+        penaltyPerWrong: 20,
+        consecutiveMissFail: 2,
+        turns: [
+          {
+            speech: '…ヴァレンティンが全部話したと？ あの意気地なし。まあいい、どうせあの男の証言など、大した価値はない。',
+            hint: '相手の証言の価値を下げようとしている。内容を否定せず、信頼性を攻撃した。',
+            expression: 'angry',
+            choices: [
+              { text: 'ヴァレンティンへの怒りを正直に出している', correct: false },
+              { text: '内容を否定せず信頼性だけを攻撃。事実は認めている', correct: true },
+              { text: '証言を軽視して余裕を見せている', correct: false },
+              { text: '読み手を試している', correct: false },
+            ],
+            correctDamage: 22,
+          },
+          {
+            speech: '帳簿の廃棄？ 古い書式は業務効率のために刷新した。それだけだ。違法なことは何もない。',
+            hint: '「違法なことは何もない」と先手を打った。法的問題を意識している。',
+            expression: 'nervous',
+            choices: [
+              { text: '本当に業務改善のためだった', correct: false },
+              { text: '法的問題を意識して先手を打った。廃棄の理由が証拠隠滅', correct: true },
+              { text: '説明責任を果たしている', correct: false },
+              { text: '読み手の勘繰りをかわしている', correct: false },
+            ],
+            correctDamage: 25,
+          },
+          {
+            speech: 'ルートを「乗っ取る」などという言い方は失礼だ。私は商人として、より効率的な流通を提案しただけだ。',
+            hint: '「乗っ取り」という表現に反応した。提案の中身ではなく言葉に反発している。',
+            expression: 'angry',
+            choices: [
+              { text: '本当に誤解を解こうとしている', correct: false },
+              { text: '実質的な行動を「提案」と言い換えた。行動自体は認めている', correct: true },
+              { text: '商人として当然のことをしているだけ', correct: false },
+              { text: '読み手に敵意を示している', correct: false },
+            ],
+            correctDamage: 25,
+          },
+          {
+            speech: '…わかった、わかった。私は…この港で生き残るために、やれることは全てやった。エレナを失ってから、もう何も怖くなくなった。全部話す。何でも。',
+            hint: 'エレナの名前が出た。娘を失った痛みが、ここへ来るまでの全ての行動の根源にある。',
+            expression: 'sad',
+            choices: [
+              { text: '諦めて投降した', correct: false },
+              { text: '娘を失った痛みが全ての行動の底にある。エレナのために積み上げた地位を守ろうとしていた', correct: true },
+              { text: '本当に何もかもを話す気になった', correct: false },
+              { text: '最後の駆け引きをしている', correct: false },
+            ],
+            correctDamage: 23,
+          },
+        ],
+        confession: '…そうよ。全部。ヴァレンティンが黙認料だけで満足しているうちに、私は「霧」のルートを完全に掌握しようとした。帳簿を書き換え、中間業者を排除し、ギルドが直接管理する体制を作ろうとした。なぜ？ エレナが出て行って、私に残ったのはギルドだけだったから。……ねえ、読み手殿。娘は今、幸せなのかしら。あの子が幸せなら…私の全てが無駄だったとしても、それでいい気がして。',
+      },
+    ],
+    reward: { exp: 300, factions: { '領主府': -20, '商人ギルド': -10, '影の舟': +5 } },
+  },
+  synthesisRecipes: [
+    {
+      needs: ['leon_1', 'val_2'],
+      result: { id: 'ch3_synth_1', text: '矛盾: 「適切に行われているはず」と言いながら、特定の夜に巡回を免除していた', power: 42, target: 'valentin' },
+    },
+    {
+      needs: ['fog_1', 'val_1'],
+      result: { id: 'ch3_synth_2', text: '矛盾: 「知らない」と言ったが、霧は領主と繋がっていると証言している', power: 45, target: 'valentin' },
+    },
+    {
+      needs: ['marg_ch3_2', 'pietro_2'],
+      result: { id: 'ch3_synth_3', text: '矛盾: 裏帳簿は存在しないと言ったが、旧帳簿は廃棄されていた', power: 48, target: 'marguerite_ch3' },
+    },
+  ],
+  chapterEndText: 'ヴァレンティンとマルグリット。二つの嘘が崩れた。領主は黙認料で腐り、ギルド長は密輸ルートの完全支配を狙っていた。だが二人の言葉の奥に、読み手は気づく。この連鎖の頂点に、まだ見ぬ者がいる。全勢力の帳簿を握り続けてきた老人が、地下のどこかにいる――。',
+};
+
+// ===================================================================
+//  CHAPTER 4 DATA — 「地下の帳簿」
+// ===================================================================
+const CHAPTER4 = {
+  ap: 5,
+  title: '地下の帳簿',
+  locationName: '旧市街地下街',
+  mission: '帳簿番フェデリコを見つけ出し、40年分の不正記録の全貌を暴け。',
+  introText: '旧市街の地下に、かつての帳簿番フェデリコ老人が隠れている。40年にわたり、この町の全勢力の不正を記録してきた男。彼の口を開かせることができれば、真実の全てが明らかになる。',
+  locations: [
+    { id: 'underground_tavern', name: '地下酒場', icon: '🕯️', npcId: 'frederico', desc: 'フェデリコ老人が潜伏中' },
+    { id: 'old_church', name: '廃教会', icon: '🏚️', npcId: 'orlando_ch4', desc: '司祭オルランドが避難している' },
+    { id: 'safe_house', name: '隠れ家', icon: '🔐', npcId: 'teresa_ch4', desc: 'テレサが情報を持っている' },
+    { id: 'shadow_wharf', name: '影の桟橋', icon: '⛵', npcId: 'fog_head_hint', desc: '「霧」本人の手がかりがある' },
+    { id: 'document_vault', name: '文書保管室', icon: '📜', npcId: 'nina', desc: '文書管理官ニーナが守っている' },
+  ],
+  npcs: {
+    frederico: {
+      name: 'フェデリコ',
+      role: '元帳簿番・老人',
+      emoji: '🕯️',
+      greeting: '…来たか。読み手か。霧からも、領主からも、ギルドからも、読み手が来ることだけは予想していなかった。',
+      questions: [
+        {
+          text: 'あなたは何者か？',
+          answer: '私はフェデリコ。40年前、この港の帳簿を管理する仕事を始めた。最初は普通の会計士だった。だが、依頼者が増えるにつれて…私は全員の不正を記録するようになった。',
+          phrase: { id: 'fred_1', text: 'フェデリコは40年間全勢力の不正を記録してきた', power: 25, target: 'frederico' },
+        },
+        {
+          text: 'なぜ黙っていた？',
+          answer: '均衡のためだ。一方だけが裁かれれば、別の一方が肥大する。全員が平等に罪を持つ時、誰も動けない。それが…この町の平和だった。歪んだ平和だが。',
+          phrase: { id: 'fred_2', text: 'フェデリコは全員が共犯という均衡で町の秩序を保っていた', power: 35, target: 'frederico' },
+          setsFlag: 'frederico_balance',
+        },
+        {
+          text: '帳簿の在り処は？',
+          answer: '…その質問に答えるつもりはない。まだ、だ。あなたが本当に真実を求めているのかどうか、まだ見極められていない。',
+          phrase: { id: 'fred_3', text: 'フェデリコはまだ帳簿の在り処を話す気がない', power: 15, target: 'frederico' },
+        },
+      ],
+    },
+    orlando_ch4: {
+      name: '司祭オルランド',
+      role: '聖堂司祭（逃亡中）',
+      emoji: '⛪',
+      greeting: '読み手殿…ここまで来てくれたか。私は今、命の危険を感じている。',
+      questions: [
+        {
+          text: 'なぜ逃げている？',
+          answer: '私は…エレナさんの逃亡を助けた。そのことが「霧」の連中に知られた。口封じをされる前に逃げてきたのです。',
+          phrase: { id: 'orlando_ch4_1', text: 'オルランドはエレナの逃亡を助けたために狙われている', power: 28, target: 'frederico' },
+        },
+        {
+          text: '「霧」の頭目について知っているか？',
+          answer: '頭目の名は…ルカという。若い男だ。かつてはこの町の普通の商人の息子だったが、父親の死後、組織を引き継いだ。復讐を胸に秘めた男だ。',
+          phrase: { id: 'orlando_ch4_2', text: '「霧」の頭目はルカという名の男。父の死後に組織を継いだ', power: 40, target: 'frederico', type: 'secret' },
+          setsFlag: 'fog_head_identity',
+        },
+      ],
+    },
+    teresa_ch4: {
+      name: '酒場のテレサ',
+      role: '女将（地下隠れ家）',
+      emoji: '🍺',
+      greeting: 'あら読み手さん、ここまで来るとは。…覚悟があるのね。少し話しましょう。',
+      questions: [
+        {
+          text: 'フェデリコについて何か知っているか？',
+          answer: 'フェデリコさんは…本当は誰かに全てを話したがっているわ。40年間、一人で抱えてきたものを。でも、話した後に自分の身がどうなるかが怖い。信頼できる人間が必要なの。',
+          phrase: { id: 'teresa_ch4_1', text: 'フェデリコは誰かに全てを話したがっているが信頼できる人間を求めている', power: 38, target: 'frederico' },
+        },
+        {
+          text: 'ルカという人物を知っているか？',
+          answer: 'ルカ…知ってるわ。昔、この酒場にも来ていた子よ。お父さんが「霧」の幹部だったんだけど、ある日突然いなくなった。ルカは「領主に殺された」と言っていたわ。それ以来、目の色が変わってしまって。',
+          phrase: { id: 'teresa_ch4_2', text: 'ルカの父は領主府に殺された。それが彼の動機', power: 45, target: 'frederico', type: 'secret' },
+          requiresFlag: 'fog_head_identity',
+        },
+      ],
+    },
+    fog_head_hint: {
+      name: '霧の観測者',
+      role: '影の桟橋の番人',
+      emoji: '⛵',
+      greeting: '…読み手か。頭は今ここにはいない。だが、メッセージを残していった。',
+      questions: [
+        {
+          text: 'メッセージとは？',
+          answer: '「帳簿番に会え。あの老人が全てを話す時、全ての鎖が切れる」…それだけだ。頭は…あなたに賭けているようだ。',
+          phrase: { id: 'fog_hint_1', text: 'ルカはフェデリコが全てを話すことを望んでいる', power: 35, target: 'frederico' },
+          setsFlag: 'fog_supports_truth',
+        },
+        {
+          text: 'ルカはなぜ真実を望む？',
+          answer: '…復讐のためだ。だが、彼自身もその復讐が正しいのか、迷っている。真実が白日の下にさらされた時、何が残るのかを知りたいのだろう。',
+          phrase: { id: 'fog_hint_2', text: 'ルカは復讐と真実の間で揺れている', power: 30, target: 'frederico' },
+        },
+      ],
+    },
+    nina: {
+      name: '文書管理官ニーナ',
+      role: '旧市街の文書管理官',
+      emoji: '📜',
+      greeting: '読み手殿、ここの文書は機密です。…ただ、あなたが来ることは予想していました。',
+      questions: [
+        {
+          text: 'この文書保管室には何がある？',
+          answer: '過去50年分の港の公式記録があります。ただし…ある年から記録に空白があります。誰かが意図的に抜き取ったようです。',
+          phrase: { id: 'nina_1', text: '港の公式記録に意図的な空白がある', power: 25, target: 'frederico' },
+        },
+        {
+          text: 'フェデリコとはどんな関係か？',
+          answer: 'フェデリコさんは私の師匠です。彼が「もう限界だ」と言ったのは去年のことです。「誰かが来たら、全てを話す。だがその誰かは、結果を恐れない者でなければならない」と。',
+          phrase: { id: 'nina_2', text: 'フェデリコは「結果を恐れない者」にだけ全てを話すつもりだ', power: 42, target: 'frederico', type: 'secret' },
+          setsFlag: 'frederico_condition',
+        },
+      ],
+    },
+  },
+  negotiation: {
+    target: 'frederico',
+    targetName: 'フェデリコ',
+    targetEmoji: '🕯️',
+    targetDesc: '40年間、全勢力の不正を記録してきた帳簿番の老人。最も手強い交渉相手。',
+    maxGuard: 120,
+    maxTurns: 10,
+    initialTrust: 100,
+    penaltyPerWrong: 15,
+    consecutiveMissFail: 3,
+    turns: [
+      {
+        speech: '読み手よ。あなたは何者だ？ 誰かに頼まれてここへ来たのか？',
+        hint: '信頼を測っている。依頼者がいるかどうかを確認している。',
+        expression: 'nervous',
+        choices: [
+          { text: '誰かの依頼で来た', correct: false },
+          { text: '自分の意志で真実を求めている', correct: true },
+          { text: '領主に頼まれた', correct: false },
+          { text: 'ギルドの命令で来た', correct: false },
+        ],
+        correctDamage: 22,
+      },
+      {
+        speech: '帳簿を見せたとして、何が変わる？ この町の人間は全員が罪を持っている。誰かが裁かれれば、必ず誰かが得をする。',
+        hint: '変化を恐れている。均衡の破壊が何をもたらすかを誰より知っている。',
+        expression: 'nervous',
+        choices: [
+          { text: '変化は必要ないと言っている', correct: false },
+          { text: '変化の結果を誰より恐れている。だから動けずにいた', correct: true },
+          { text: '全員有罪なので真実は無意味だと言っている', correct: false },
+          { text: '読み手に投げかけている哲学的問い', correct: false },
+        ],
+        correctDamage: 25,
+      },
+      {
+        speech: '私は誰の側でもない。ただ記録するだけだった。記録を残すことが…罪になるとは思わなかった。',
+        hint: '記録行為を「無実」と信じているが、均衡を意図的に維持したのは彼自身だ。',
+        expression: 'sad',
+        choices: [
+          { text: '本当に無実の傍観者だった', correct: false },
+          { text: '記録だけでなく、均衡を意図的に維持することで全ての罪に加担した', correct: true },
+          { text: '記録者の義務を果たしていた', correct: false },
+          { text: '後悔を示している正直な独白', correct: false },
+        ],
+        correctDamage: 28,
+      },
+      {
+        speech: 'ルカが…真実を望んでいるだと？ あの子が。あの子の父親を…私は見殺しにした。記録していたのに、何もしなかった。',
+        hint: 'ルカへの罪悪感。この発言が核心に近い。',
+        expression: 'sad',
+        choices: [
+          { text: 'ルカへの同情を示している', correct: false },
+          { text: '見殺しにしたという罪悪感が、全てを話せない根本の理由の一つ', correct: true },
+          { text: 'ルカの父の死に責任はないと言っている', correct: false },
+          { text: '過去の後悔を吐露しているだけ', correct: false },
+        ],
+        correctDamage: 25,
+      },
+      {
+        speech: '…「結果を恐れない者」か。あの子（ニーナ）はそれをあなたに言ったか。……では聞こう。あなたは、真実を知った後にどうするつもりだ？',
+        hint: '最後の問い。答え方で帳簿を渡すかどうかが決まる。',
+        expression: 'open',
+        choices: [
+          { text: '誰かを裁く', correct: false },
+          { text: '真実を公表する', correct: false },
+          { text: '関係者全員に選択を委ねる', correct: true },
+          { text: '秘密にして自分だけが知る', correct: false },
+        ],
+        correctDamage: 20,
+      },
+    ],
+    confession: '…そうか。「選択を委ねる」か。それが…唯一、私が受け入れられる答えだ。（フェデリコは長い沈黙の後、厚い革表紙の帳簿を取り出した）これが全てだ。40年分。領主の黙認料、ギルドの二重帳簿、霧の密輸記録、そして…ルカの父が殺された夜の記録。誰も知らない真実が、ここにある。読み手よ。あなたの「選択」の意味を、どうか覚えていてくれ。これを使う時も、使わない時も、全ての責任はあなたにある。',
+    reward: { exp: 400, factions: { '領主府': -15, '商人ギルド': -15, '影の舟': +15, '旧市街': +20 } },
+  },
+  synthesisRecipes: [
+    {
+      needs: ['fred_1', 'nina_1'],
+      result: { id: 'ch4_synth_1', text: '一致: フェデリコの記録と公式文書の空白が対応。誰かが公式記録を改ざんした', power: 45, target: 'frederico' },
+    },
+    {
+      needs: ['teresa_ch4_2', 'orlando_ch4_2'],
+      result: { id: 'ch4_synth_2', text: '一致: ルカの父は領主府に殺された。オルランドの証言と一致', power: 48, target: 'frederico' },
+    },
+    {
+      needs: ['fog_hint_1', 'nina_2'],
+      result: { id: 'ch4_synth_3', text: 'ルカとフェデリコ、双方が同じ条件を待っていた。「結果を恐れない者」', power: 52, target: 'frederico' },
+    },
+  ],
+  chapterEndText: '40年分の帳簿が、読み手の手に渡った。そこには全ての罪が記されていた。領主の腐敗、ギルドの欺瞞、霧の密輸、そして公式記録から消された死。真実は重い。だが、もはや後戻りはできない。最終章——全ての関係者が一堂に会する時が来た。',
+};
+
+// ===================================================================
+//  CHAPTER 5 DATA — 「真実の代償」
+// ===================================================================
+const CHAPTER5 = {
+  ap: 6,
+  title: '真実の代償',
+  locationName: '旧市庁舎・最終会議室',
+  mission: '4勢力代表全員が集まる最終交渉に臨め。そして、真実の使い道を決めよ。',
+  introText: '帳簿を手にした読み手の前に、全ての関係者が集まった。領主ヴァレンティン、ギルド長マルグリット、司祭オルランド、そして霧の頭目ルカ。それぞれの嘘と真実が交差する最後の場に、エレナが戻ってきた。全ての鎖を断ち切る時が来た。',
+  locations: [
+    { id: 'final_hall', name: '最終会議室', icon: '🏛️', npcId: 'elena', desc: 'エレナが自ら戻ってきた' },
+    { id: 'antechamber', name: '控えの間', icon: '🚪', npcId: 'luca', desc: 'ルカが静かに待っている' },
+    { id: 'vestibule', name: '玄関広間', icon: '🕯️', npcId: 'frederico_ch5', desc: 'フェデリコが最後の証言をする' },
+    { id: 'rooftop', name: '屋上テラス', icon: '🌅', npcId: 'valentin_ch5', desc: 'ヴァレンティンが一人で立っている' },
+    { id: 'chapel', name: '礼拝堂', icon: '⛪', npcId: 'orlando_ch5', desc: 'オルランドが祈りを捧げている' },
+    { id: 'garden', name: '中庭', icon: '🌹', npcId: 'marguerite_ch5', desc: 'マルグリットが庭を歩いている' },
+  ],
+  npcs: {
+    elena: {
+      name: 'エレナ',
+      role: 'マルグリットの娘（リベルタより帰還）',
+      emoji: '🌹',
+      greeting: '…読み手さま。私がここに戻ってきたのは、逃げ続けることに疲れたからではありません。お母さまと、きちんと話したかった。そのために。',
+      questions: [
+        {
+          text: 'リベルタでの生活はどうだったか？',
+          answer: '自由でした。誰も私の名前を知らない。ギルド長の娘でも、縁談の道具でもない、ただのエレナとして生きた半年でした。怖かったけど、毎日が本物だった。',
+          phrase: { id: 'elena_1', text: 'エレナは自由の中で「本物の自分」を見つけた', power: 30, target: 'final' },
+        },
+        {
+          text: 'お母さんに何を伝えたい？',
+          answer: '…ごめんなさいを、言いたいです。でも、後悔はしていない。お母さまも、本当はわかっているはずです。私が幸せになる権利があることを。お母さまだって、昔はそう思っていたはずだから。',
+          phrase: { id: 'elena_2', text: 'エレナは謝罪と自立の両立を望んでいる', power: 38, target: 'final' },
+        },
+        {
+          text: '最終交渉に立ち会うか？',
+          answer: 'はい。私も当事者の一人です。お母さまの嘘の一部は、私のためでもありました。全員が真実と向き合うのなら、私もそこにいるべきです。',
+          phrase: { id: 'elena_3', text: 'エレナは全員が真実と向き合う場に立ち会う', power: 25, target: 'final' },
+          setsFlag: 'elena_present',
+        },
+      ],
+    },
+    luca: {
+      name: 'ルカ',
+      role: '「霧」頭目',
+      emoji: '🌫️',
+      greeting: 'やっと会えた、読み手。俺はずっと待っていた。誰かが帳簿を手に入れる日を。',
+      questions: [
+        {
+          text: 'なぜ待っていた？',
+          answer: '俺は父の仇を討つために組織を引き継いだ。だが、復讐に燃えれば燃えるほど、父が俺に何を望んでいたかが分からなくなった。父は…正直な人間だった。俺がやってきたことは、その正直さへの裏切りかもしれない。',
+          phrase: { id: 'luca_1', text: 'ルカは復讐のために組織を継いだが、父の望みとの矛盾に気づいている', power: 40, target: 'final' },
+          setsFlag: 'luca_doubt',
+        },
+        {
+          text: '復讐を諦める気はあるか？',
+          answer: '…わからない。ただ、帳簿が公になれば、俺の父を殺した者も白日の下にさらされる。それで十分かもしれない。剣よりも、真実の方が強いこともある。',
+          phrase: { id: 'luca_2', text: 'ルカは「真実の公表」を復讐の代替として考え始めている', power: 45, target: 'final' },
+          requiresFlag: 'luca_doubt',
+        },
+        {
+          text: 'この先どうするつもりか？',
+          answer: '…この場が終わったら、組織を解散する。俺が続けている限り、父の名は犯罪組織の頭目として残る。それは嫌だ。父を…ただの人間として、弔いたい。',
+          phrase: { id: 'luca_3', text: 'ルカは組織解散を決意。父を普通の人間として弔いたい', power: 35, target: 'final' },
+        },
+      ],
+    },
+    frederico_ch5: {
+      name: 'フェデリコ',
+      role: '元帳簿番（最終章）',
+      emoji: '🕯️',
+      greeting: '読み手よ。今日で、私の役目は終わりだ。帳簿はあなたの手にある。後は…あなたが決めることだ。',
+      questions: [
+        {
+          text: '最後に伝えたいことは？',
+          answer: '真実を持つ者には、三つの選択がある。公表して断罪する。秘密にして均衡を保つ。あるいは…関係者全員に委ねて、それぞれが決める。どれが正しいかは、私にはわからない。だが、どれを選んでも、あなたは「読み手」であり続ける。',
+          phrase: { id: 'fred_ch5_1', text: 'フェデリコの最後の言葉：三つの選択と、読み手という役割', power: 50, target: 'final' },
+        },
+        {
+          text: '最終交渉に同席するか？',
+          answer: '…同席する。40年間の重荷を、今日下ろすために。全員の前で、私も証言する。それが最後の仕事だ。',
+          phrase: { id: 'fred_ch5_2', text: 'フェデリコは最終交渉で証言する', power: 30, target: 'final' },
+          setsFlag: 'frederico_testimony',
+        },
+      ],
+    },
+    valentin_ch5: {
+      name: 'ヴァレンティン',
+      role: '領主（最終章）',
+      emoji: '👑',
+      greeting: '…読み手か。帳簿が出たと聞いた。もはや言い訳はしない。ただ、一つだけ聞いてくれ。',
+      questions: [
+        {
+          text: '何を聞きたい？',
+          answer: 'この町の人間は、私が失脚した後にどうなる？ 誰かが領主の席に座る。その者もまた、いつか汚れる。構造が変わらなければ、繰り返されるだけだ。それでも、真実は必要か？',
+          phrase: { id: 'val_ch5_1', text: 'ヴァレンティンの問い：構造を変えずに断罪しても繰り返されるだけではないか', power: 42, target: 'final' },
+        },
+        {
+          text: '自分から辞職する気はあるか？',
+          answer: '…ある。帳簿が公になるなら、私に残る道はそれしかない。ただ…この40年で作ったものが全て崩れるのを見るのは、辛い。間違ったやり方でも、私はこの町を大切にしていた。それだけは、信じてほしい。',
+          phrase: { id: 'val_ch5_2', text: 'ヴァレンティンは辞職を受け入れる。誤った方法でも町を愛していた', power: 35, target: 'final' },
+          setsFlag: 'valentin_accepts',
+        },
+      ],
+    },
+    orlando_ch5: {
+      name: '司祭オルランド',
+      role: '司祭（最終章）',
+      emoji: '⛪',
+      greeting: '読み手殿。神の前では、全ての人間は等しく罪を持ちます。今日は、その罪を誰もが認める日となるでしょう。',
+      questions: [
+        {
+          text: '最終交渉で証言するか？',
+          answer: 'します。エレナさんの逃亡を助けたこと、寄付金を流用したこと、全て認めます。神への誓いと、人への義務のどちらを優先したか、問われるでしょう。私は…人の命を選びました。',
+          phrase: { id: 'orlando_ch5_1', text: 'オルランドは全てを認め証言する。神への誓いより人の命を選んだ', power: 38, target: 'final' },
+        },
+        {
+          text: 'この町の未来についてどう思う？',
+          answer: '罪は赦されなくても、人は変われます。変わる機会を与えること、それが真実を明かす本当の意味ではないかと、私は思います。',
+          phrase: { id: 'orlando_ch5_2', text: 'オルランドの信念：真実は断罪ではなく変化の機会のために', power: 32, target: 'final' },
+        },
+      ],
+    },
+    marguerite_ch5: {
+      name: 'マルグリット',
+      role: 'ギルド長（最終章）',
+      emoji: '👩',
+      greeting: '…読み手殿。エレナが戻ってきた。私に会いに。あの子が戻ってくるとは、思っていなかった。',
+      questions: [
+        {
+          text: 'エレナと話したか？',
+          answer: '…少しだけ。あの子は、「お母さまのことが心配だった」と言った。憎んでいると思っていたのに。私は…泣いてしまった。ギルド長として、人前で泣いたのは初めてだ。',
+          phrase: { id: 'marg_ch5_1', text: 'マルグリットはエレナと和解の第一歩を踏み出した', power: 45, target: 'final' },
+          setsFlag: 'marguerite_reconcile',
+        },
+        {
+          text: '最終交渉で何を話すつもりか？',
+          answer: '全てを認める。帳簿の書き換え、密輸ルートの乗っ取り、全部。…でも、最後にエレナに一つだけ言いたい。「あなたが幸せそうで、よかった」と。それだけで十分だ。',
+          phrase: { id: 'marg_ch5_2', text: 'マルグリットは全てを認め、エレナの幸せを願う言葉を残したい', power: 40, target: 'final' },
+          requiresFlag: 'marguerite_reconcile',
+        },
+      ],
+    },
+  },
+  negotiation: {
+    target: 'final',
+    targetName: '最終交渉',
+    targetEmoji: '🏛️',
+    targetDesc: '4勢力代表が一堂に会した。ターンごとに発言者が変わる。全てのフレーズが有効。',
+    maxGuard: 150,
+    maxTurns: 10,
+    initialTrust: 100,
+    penaltyPerWrong: 15,
+    consecutiveMissFail: 3,
+    allowAllPhrases: true,
+    turns: [
+      {
+        speaker: 'ヴァレンティン',
+        speakerEmoji: '👑',
+        speech: 'これ以上の調査は必要ない。私が全責任を負う。だが読み手よ、帳簿の公開は町に混乱をもたらす。秩序のために、ここで止めるべきではないか？',
+        hint: '「全責任」と言いながら帳簿の公開阻止が目的。責任の取り方を自分で決めようとしている。',
+        expression: 'nervous',
+        choices: [
+          { text: '本当に全責任を取ろうとしている', correct: false },
+          { text: '「責任を取る」という言葉で帳簿公開を止め、自分の手で幕を引こうとしている', correct: true },
+          { text: '町の秩序を本当に心配している', correct: false },
+          { text: '読み手に取引を持ちかけている', correct: false },
+        ],
+        correctDamage: 28,
+      },
+      {
+        speaker: 'マルグリット',
+        speakerEmoji: '👩',
+        speech: '…私も、読み手殿に申し上げたいことがある。帳簿が公になれば、ギルドは崩壊する。何百人という商人と職人の生活が奪われる。それでも、真実は必要か？',
+        hint: '第三者の被害を盾にして自分への追及を逸らしている。',
+        expression: 'nervous',
+        choices: [
+          { text: '本当に労働者のことを心配している', correct: false },
+          { text: '無関係な第三者の被害を強調して自身への責任から目を逸らしている', correct: true },
+          { text: '経済的影響を正当に指摘している', correct: false },
+          { text: '読み手に選択を迫っている', correct: false },
+        ],
+        correctDamage: 28,
+      },
+      {
+        speaker: 'オルランド',
+        speakerEmoji: '⛪',
+        speech: '主よ…私は全てを告白します。読み手殿、私の罪は神の前で赦しを乞うものです。しかし人の法の裁きは、神の慈悲とは別のものです。',
+        hint: '神の赦しと人の法の裁きを分離している。法的責任から逃れたい。',
+        expression: 'sad',
+        choices: [
+          { text: '真摯な信仰告白をしている', correct: false },
+          { text: '神の赦しを得れば人の法は関係ないという論理で法的責任を回避しようとしている', correct: true },
+          { text: '宗教者として神に委ねている', correct: false },
+          { text: '読み手への懺悔を行っている', correct: false },
+        ],
+        correctDamage: 25,
+      },
+      {
+        speaker: 'ルカ',
+        speakerEmoji: '🌫️',
+        speech: '俺の父は…この部屋にいる誰かの命令で殺された。40年前。読み手よ、帳簿の中に、その夜の記録がある。俺はずっと、その名前を知りたかった。',
+        hint: 'これが真実の核心。ルカは断罪ではなく、真実の確認を求めている。',
+        expression: 'sad',
+        choices: [
+          { text: '犯人を見つけて復讐したい', correct: false },
+          { text: '真実の確認が第一の目的。復讐より、父の死の真相を知ることを求めている', correct: true },
+          { text: '全員を告発したい', correct: false },
+          { text: '感情的になって判断が曇っている', correct: false },
+        ],
+        correctDamage: 30,
+      },
+      {
+        speaker: '全員',
+        speakerEmoji: '🏛️',
+        speech: '……（長い沈黙が部屋を満たす。やがて、フェデリコが立ち上がった）私が全員に証言する。40年前のあの夜から、今日この日まで。全て。……（フェデリコの声は震えていたが、止まらなかった）',
+        hint: 'フェデリコの証言が全員の防御を崩す。このターンの正解は「傍観ではなく証言を支持する」。',
+        expression: 'open',
+        choices: [
+          { text: 'フェデリコの証言を止める', correct: false },
+          { text: 'フェデリコの証言を支持し、全員が真実と向き合う場を作る', correct: true },
+          { text: '傍観して成り行きを見守る', correct: false },
+          { text: '証言内容の一部だけを公開する', correct: false },
+        ],
+        correctDamage: 39,
+      },
+    ],
+    confession: '（フェデリコの証言が終わった。室内は静寂に包まれた。ヴァレンティンは両手で顔を覆い、マルグリットはエレナの手をそっと握った。オルランドは静かに祈りを捧げた。そしてルカは、長い間目を閉じていたが、やがてゆっくりと頷いた。）\n\n「父は…ヴァレンティン配下の者に消された。40年前、父が密輸を告発しようとした夜に。フェデリコ老人は知っていた。だから均衡を保ち、誰も動けないようにした。…それが、この町の歴史だ。」\n\n（再び沈黙。そして誰からともなく、声が上がった。）\n\n読み手よ。あなたは全ての真実を手にしている。どうするかは、あなたが決めることだ。',
+    reward: { exp: 600, factions: { '領主府': -30, '商人ギルド': -20, '影の舟': +10, '旧市街': +30 } },
+  },
+  synthesisRecipes: [
+    {
+      needs: ['elena_2', 'marg_ch5_1'],
+      result: { id: 'ch5_synth_1', text: '和解の兆し：エレナとマルグリット、母娘の壁が初めて崩れた', power: 55, target: 'final' },
+    },
+    {
+      needs: ['luca_2', 'fred_ch5_1'],
+      result: { id: 'ch5_synth_2', text: '一致：ルカとフェデリコは「真実の公表」が最善の解だと同意している', power: 58, target: 'final' },
+    },
+    {
+      needs: ['val_ch5_2', 'orlando_ch5_2'],
+      result: { id: 'ch5_synth_3', text: '補完：ヴァレンティンの辞職とオルランドの信念が、新しい秩序への道を示す', power: 60, target: 'final' },
+    },
+  ],
+  endings: [
+    {
+      id: 'justice',
+      title: '正義の公表',
+      desc: '全ての記録を公開し、法の裁きに委ねる。',
+      text: '帳簿は公開された。ヴァレンティンは辞職し、マルグリットはギルド長の座を退いた。オルランドは聖堂を去り、ルカは組織を解散した。\n\n町は混乱した。職を失った者もいた。だが、嘘の上に築かれた秩序より、痛みを伴う真実の方が、長く続く礎になる。\n\n六ヶ月後、港には新しいギルド長が就任した。若く、汚れていない。エレナではなかったが、エレナを知る者だった。マルグリットは小さな花屋を開き、娘と文を交わすようになったという。\n\nフェデリコは、最後にこう言った。「正義とは、正しいことをすることではない。正しいことを、し続けることだ。」\n\nルカの父の墓に、初めて花が供えられた日、ルカは泣いた。それが、彼の復讐の終わりだった。',
+    },
+    {
+      id: 'silence',
+      title: '沈黙の秩序',
+      desc: '帳簿を封印し、現状の均衡を維持する。',
+      text: '読み手は帳簿を封印した。フェデリコが40年間守ってきた均衡を、そのまま引き継ぐことにした。\n\n誰も罰せられなかった。誰も変わらなかった。ヴァレンティンは引き続き領主として君臨し、マルグリットはギルドを運営した。「霧」は静かに活動を続けた。\n\nだが何かが変わった。全員が、読み手に知られているという事実を知っている。それが新しい均衡だった。\n\nルカは、組織を解散しなかった。父の仇を知りながら、動けないでいる。その目には、何かが死んでいた。\n\nフェデリコは、最後にこう言った。「平和は、いつも誰かの沈黙の上に成り立っている。」\n\nエレナは再び旅に出た。今度は、帰る場所がないことを知りながら。',
+    },
+    {
+      id: 'third',
+      title: '第三の道',
+      desc: '帳簿を各人に返し、それぞれが選択する。',
+      text: '読み手は帳簿を各人に渡した。自分に関する記録を、それぞれが手にした。公開するかどうかは、各人が決めることにした。\n\nヴァレンティンは三日後、自ら辞表を提出した。帳簿の一部を公開し、「後任者への警告として」記録を残すよう言い残した。\n\nマルグリットはギルドの二重帳簿を清算し、エレナに手紙を書いた。「あなたが正しかった。遅すぎたけれど。」\n\nオルランドは聖堂に残り、毎週の礼拝で自らの罪を公に語ることにした。信者は減ったが、残った者たちは真剣に耳を傾けた。\n\nルカは、父の死を記した一節だけを公開し、「これが全ての始まりだった」と書いた文書とともに、組織の解散を宣言した。\n\nフェデリコは、最後にこう言った。「選択を人に委ねる。それが、最も人間を信じる行為だ。」\n\nエレナは、翌春また帰ってきた。今度は、自分の言葉で語るために。',
+    },
+  ],
+  chapterEndText: '全ての真実が明らかになった。読み手の旅は終わる。だが、町の物語は続く。嘘と真実の間で、人は今日も生きている――。',
+};
+
+// ===================================================================
+//  CHAPTER INDEX
+// ===================================================================
+const CHAPTERS = [null, CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5];
+
+function getCurrentChapter() {
+  return CHAPTERS[state.chapter] || CHAPTER1;
+}
+
+const LEVEL_TABLE = [
+  { lv: 1, exp: 0, unlock: '基本交渉' },
+  { lv: 2, exp: 100, unlock: 'フレーズ効果+20%' },
+  { lv: 3, exp: 300, unlock: '表情ヒント' },
+  { lv: 4, exp: 500, unlock: 'AP+1' },
+  { lv: 5, exp: 800, unlock: 'フレーズ合成' },
+];
+
+const SYNTHESIS_RECIPES = [
+  {
+    needs: ['garcia_1', 'teresa_1'],
+    result: { id: 'synth_1', text: '矛盾: ガルシアは何もないと言ったが、深夜に荷車の音がした', power: 40, target: 'garcia' },
+  },
+  {
+    needs: ['garcia_2', 'marco_1'],
+    result: { id: 'synth_2', text: '矛盾: 荷降ろしを確認した二人の証言。では誰が持ち出した？', power: 35, target: 'garcia' },
+  },
+];
+
+const TUTORIAL_SHOWN = new Set();
+
+// ===================================================================
+//  GAME STATE
+// ===================================================================
+let state = {
+  screen: 'title',
+  ap: 3,
+  visitedLocations: [],
+  askedQuestions: {},   // { npcId: [questionIndex, ...] }
+  flags: {},
+  phrases: [],
+  level: 1,
+  exp: 0,
+  factions: { '領主府': 0, '商人ギルド': 0, '影の舟': 0, '旧市街': 0 },
+  negGuard: 80,
+  negTrust: 100,
+  negTurn: 0,
+  negConsecutiveMiss: 0,
+  negDone: false,
+  chapter: 1,
+  clearedChapters: [],
+  // Ch3 double battle state
+  ch3BattleIndex: 0,
+  // Ch5 ending choice
+  endingChosen: null,
+};
+
+function saveState() {
+  const saveData = {
+    ...state,
+    flags: { ...state.flags },
+    phrases: [...state.phrases],
+    askedQuestions: JSON.parse(JSON.stringify(state.askedQuestions)),
+    factions: { ...state.factions },
+    clearedChapters: [...state.clearedChapters],
+  };
+  localStorage.setItem('subtext_save', JSON.stringify(saveData));
+}
+
+function loadState() {
+  const raw = localStorage.getItem('subtext_save');
+  if (!raw) return false;
+  try {
+    const loaded = JSON.parse(raw);
+    Object.assign(state, loaded);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function newGame() {
+  state = {
+    screen: 'title',
+    ap: 3,
+    visitedLocations: [],
+    askedQuestions: {},
+    flags: {},
+    phrases: [],
+    level: 1,
+    exp: 0,
+    factions: { '領主府': 0, '商人ギルド': 0, '影の舟': 0, '旧市街': 0 },
+    negGuard: 80,
+    negTrust: 100,
+    negTurn: 0,
+    negConsecutiveMiss: 0,
+    negDone: false,
+    chapter: 1,
+    clearedChapters: [],
+    ch3BattleIndex: 0,
+    endingChosen: null,
+  };
+  TUTORIAL_SHOWN.clear();
+}
+
+// ===================================================================
+//  NAVIGATION
+// ===================================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) el.classList.add('active');
+  state.screen = id;
+  updateFAB();
+}
+
+function updateFAB() {
+  const fab = document.getElementById('phrasebook-fab');
+  const showOn = ['town', 'conversation', 'preneg', 'negotiation'];
+  if (showOn.includes(state.screen) && state.phrases.length > 0) {
+    fab.classList.add('visible');
+  } else {
+    fab.classList.remove('visible');
+  }
+}
+
+// ===================================================================
+//  TYPEWRITER
+// ===================================================================
+let typewriterTimer = null;
+let typewriterSkip = false;
+
+function typewriter(el, text, msPerChar, onDone) {
+  if (typewriterTimer) clearInterval(typewriterTimer);
+  typewriterSkip = false;
+  el.textContent = '';
+  let i = 0;
+
+  function tick() {
+    if (typewriterSkip) {
+      el.textContent = text;
+      if (typewriterTimer) clearInterval(typewriterTimer);
+      typewriterTimer = null;
+      if (onDone) onDone();
+      return;
+    }
+    if (i < text.length) {
+      el.textContent += text[i];
+      i++;
+    } else {
+      clearInterval(typewriterTimer);
+      typewriterTimer = null;
+      if (onDone) onDone();
+    }
+  }
+
+  typewriterTimer = setInterval(tick, msPerChar);
+}
+
+function skipTypewriter() {
+  typewriterSkip = true;
+}
+
+// ===================================================================
+//  FLASH / SHAKE
+// ===================================================================
+function flashGreen() {
+  const el = document.getElementById('flash-overlay');
+  el.style.background = 'rgba(0,210,160,0.25)';
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 200);
+}
+
+function flashRed() {
+  const el = document.getElementById('flash-overlay');
+  el.style.background = 'rgba(255,71,87,0.3)';
+  el.style.opacity = '1';
+  setTimeout(() => { el.style.opacity = '0'; }, 200);
+  const body = document.getElementById('neg-body');
+  if (body) {
+    body.classList.remove('shake');
+    void body.offsetWidth;
+    body.classList.add('shake');
+    setTimeout(() => body.classList.remove('shake'), 350);
+  }
+}
+
+// ===================================================================
+//  TUTORIAL TOAST
+// ===================================================================
+function showTutorial(key, msg) {
+  if (TUTORIAL_SHOWN.has(key)) return;
+  TUTORIAL_SHOWN.add(key);
+  const el = document.getElementById('tutorial-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// ===================================================================
+//  PHRASE POPUP
+// ===================================================================
+function showPhrasePopup(phrase, callback) {
+  const popup = document.getElementById('phrase-popup');
+  document.getElementById('phrase-popup-text').textContent = `「${phrase.text}」`;
+  document.getElementById('phrase-popup-power').textContent = `威力: ${phrase.power}`;
+  popup.classList.add('show');
+
+  const closeBtn = document.getElementById('phrase-popup-close');
+  const closeHandler = () => {
+    popup.classList.remove('show');
+    closeBtn.removeEventListener('click', closeHandler);
+    if (callback) callback();
+  };
+  closeBtn.addEventListener('click', closeHandler);
+
+  showTutorial('phrase_acquired', 'フレーズを獲得しました！ 交渉戦で相手にぶつける武器になります。');
+}
+
+// ===================================================================
+//  PHRASEBOOK
+// ===================================================================
+function renderPhrasebook(container) {
+  container.innerHTML = '';
+  if (state.phrases.length === 0) {
+    container.innerHTML = '<div class="phrasebook-empty">フレーズはまだありません</div>';
+    return;
+  }
+  const neg = getNegotiation();
+  const negTarget = neg ? neg.target : 'garcia';
+  const allowAll = neg ? neg.allowAllPhrases : false;
+  state.phrases.forEach(p => {
+    const isMatch = allowAll || p.target === negTarget || p.target === 'all';
+    const el = document.createElement('div');
+    el.className = 'phrase-card' + (isMatch ? ' target-match' : '');
+    el.innerHTML = `
+      <div class="phrase-card-text">「${p.text}」</div>
+      <div class="phrase-card-power">威力 ${p.power}</div>
+    `;
+    container.appendChild(el);
+  });
+}
+
+function openPhrasebook() {
+  const overlay = document.getElementById('phrasebook-overlay');
+  renderPhrasebook(document.getElementById('phrasebook-list'));
+  overlay.classList.add('show');
+}
+
+function closePhrasebook() {
+  document.getElementById('phrasebook-overlay').classList.remove('show');
+}
+
+// ===================================================================
+//  LEVEL / EXP
+// ===================================================================
+function getLevel(exp) {
+  let lv = 1;
+  for (const entry of LEVEL_TABLE) {
+    if (exp >= entry.exp) lv = entry.lv;
+  }
+  return lv;
+}
+
+function addExp(amount) {
+  const oldLv = getLevel(state.exp);
+  state.exp += amount;
+  const newLv = getLevel(state.exp);
+  state.level = newLv;
+  return newLv > oldLv ? newLv : null;
+}
+
+// ===================================================================
+//  SYNTHESIS CHECK
+// ===================================================================
+function checkSynthesis() {
+  const ids = state.phrases.map(p => p.id);
+  let added = false;
+
+  // Global ch1 recipes
+  for (const recipe of SYNTHESIS_RECIPES) {
+    if (recipe.needs.every(n => ids.includes(n)) && !ids.includes(recipe.result.id)) {
+      state.phrases.push({ ...recipe.result });
+      added = true;
+    }
+  }
+
+  // Current chapter recipes
+  const ch = getCurrentChapter();
+  const chRecipes = ch.synthesisRecipes || [];
+  for (const recipe of chRecipes) {
+    if (recipe.needs.every(n => ids.includes(n)) && !ids.includes(recipe.result.id)) {
+      state.phrases.push({ ...recipe.result });
+      added = true;
+    }
+  }
+
+  return added;
+}
+
+// ===================================================================
+//  SCREEN: TITLE
+// ===================================================================
+function initTitle() {
+  showScreen('title');
+  const hasSave = !!localStorage.getItem('subtext_save');
+  document.getElementById('btn-continue').disabled = !hasSave;
+}
+
+document.getElementById('btn-newgame').addEventListener('click', () => {
+  newGame();
+  startChapterIntro();
+});
+
+document.getElementById('btn-continue').addEventListener('click', () => {
+  if (loadState()) {
+    TUTORIAL_SHOWN.clear();
+    goToTown();
+  }
+});
+
+// ===================================================================
+//  SCREEN: CHAPTER INTRO
+// ===================================================================
+function startChapterIntro() {
+  showScreen('intro');
+  const ch = getCurrentChapter();
+  const el = document.getElementById('intro-text');
+  const btn = document.getElementById('btn-intro-continue');
+  const hint = document.getElementById('intro-hint');
+
+  // Update static labels
+  const chLabel = document.querySelector('#screen-intro .intro-chapter');
+  const chTitle = document.querySelector('#screen-intro .intro-title');
+  if (chLabel) chLabel.textContent = `第${state.chapter}章`;
+  if (chTitle) chTitle.textContent = ch.title || '';
+
+  btn.classList.add('hidden');
+  hint.style.display = 'block';
+
+  el.addEventListener('click', skipTypewriter, { once: true });
+
+  typewriter(el, ch.introText, 30, () => {
+    hint.style.display = 'none';
+    btn.classList.remove('hidden');
+    btn.classList.add('fade-in');
+  });
+}
+
+document.getElementById('btn-intro-continue').addEventListener('click', () => {
+  goToTown();
+});
+
+// ===================================================================
+//  SCREEN: TOWN
+// ===================================================================
+function goToTown() {
+  renderTownScreen();
+  showScreen('town');
+  if (checkSynthesis()) {
+    renderTownScreen();
+  }
+  showTutorial('town_first', 'NPCに話しかけて情報を集めましょう。APがなくなると聞き込みは終了です。');
+}
+
+function renderTownScreen() {
+  const ch = getCurrentChapter();
+  const maxAP = ch.ap || 3;
+
+  // Header
+  const chLabel = document.querySelector('.town-chapter-label');
+  const chTitle = document.querySelector('.town-title');
+  if (chLabel) chLabel.textContent = `第${state.chapter}章 — ${ch.title || ''}`;
+  if (chTitle) chTitle.textContent = ch.locationName || 'ポルタ・ヴェリタス';
+
+  // Mission
+  const missionEl = document.getElementById('town-mission');
+  if (missionEl && ch.mission) {
+    missionEl.innerHTML = `<strong style="color:var(--hint);">依頼:</strong> ${ch.mission}`;
+  }
+
+  // AP
+  const apDots = document.getElementById('ap-dots-container');
+  const apText = document.getElementById('ap-value-text');
+  apDots.innerHTML = '';
+  for (let i = 0; i < maxAP; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'ap-dot' + (i >= state.ap ? ' used' : '');
+    apDots.appendChild(dot);
+  }
+  apText.textContent = `(${state.ap}/${maxAP})`;
+
+  const grid = document.getElementById('location-grid');
+  grid.innerHTML = '';
+
+  ch.locations.forEach(loc => {
+    const npc = ch.npcs[loc.npcId];
+    if (!npc) return;
+    const visited = state.visitedLocations.includes(loc.id);
+    const canGo = state.ap > 0 && !visited;
+
+    const card = document.createElement('div');
+    card.className = 'location-card' + (visited ? ' visited' : '') + (!canGo ? ' disabled' : '');
+    card.innerHTML = `
+      <div class="location-icon">${loc.icon}</div>
+      <div class="location-name">${loc.name}</div>
+      <div class="location-npc">${npc.name}</div>
+      <div class="location-status">${visited ? '（訪問済み）' : canGo ? 'AP -1' : state.ap === 0 ? 'APなし' : ''}</div>
+    `;
+
+    if (canGo) {
+      card.addEventListener('click', () => enterLocation(loc));
+    }
+
+    grid.appendChild(card);
+  });
+
+  const tutMsg = document.getElementById('town-tutorial-msg');
+  if (state.ap === 0 && !state.negDone) {
+    tutMsg.textContent = 'APを使い切りました。交渉へ進みましょう。';
+    tutMsg.style.display = 'block';
+  } else {
+    tutMsg.style.display = 'none';
+  }
+
+  const goNeg = document.getElementById('btn-go-negotiate');
+  goNeg.disabled = false;
+}
+
+document.getElementById('btn-go-negotiate').addEventListener('click', () => {
+  openPreNeg();
+});
+
+document.getElementById('btn-phrasebook-town').addEventListener('click', openPhrasebook);
+
+// ===================================================================
+//  ENTER LOCATION / CONVERSATION
+// ===================================================================
+function enterLocation(loc) {
+  const ch = getCurrentChapter();
+  const npc = ch.npcs[loc.npcId];
+  openConversation(npc, loc);
+}
+
+let currentConvNpc = null;
+let currentConvLoc = null;
+
+function openConversation(npc, loc) {
+  currentConvNpc = npc;
+  currentConvLoc = loc;
+  if (!state.askedQuestions[npc.name]) {
+    state.askedQuestions[npc.name] = [];
+  }
+
+  document.getElementById('conv-portrait').textContent = npc.emoji;
+  document.getElementById('conv-npc-name').textContent = npc.name;
+  document.getElementById('conv-npc-role').textContent = npc.role;
+
+  const speech = document.getElementById('conv-speech');
+  speech.addEventListener('click', skipTypewriter, { once: true });
+
+  const questionsLabel = document.getElementById('conv-questions-label');
+  const questionList = document.getElementById('conv-question-list');
+  questionsLabel.style.display = 'none';
+  questionList.innerHTML = '';
+
+  typewriter(speech, npc.greeting, 30, () => {
+    showQuestions(npc);
+  });
+
+  showScreen('conversation');
+}
+
+function showQuestions(npc) {
+  const questionsLabel = document.getElementById('conv-questions-label');
+  const questionList = document.getElementById('conv-question-list');
+
+  questionsLabel.style.display = 'block';
+  questionList.innerHTML = '';
+
+  npc.questions.forEach((q, idx) => {
+    const asked = state.askedQuestions[npc.name]?.includes(idx);
+
+    // Check conditional questions
+    let hidden = false;
+    if (q.requiresFlag && !state.flags[q.requiresFlag]) {
+      hidden = true;
+    }
+    if (hidden) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'question-btn' + (asked ? ' asked' : '');
+    btn.textContent = q.text;
+    btn.disabled = asked;
+
+    btn.addEventListener('click', () => {
+      askQuestion(npc, q, idx);
+    });
+
+    questionList.appendChild(btn);
+  });
+}
+
+function askQuestion(npc, question, idx) {
+  if (state.askedQuestions[npc.name]?.includes(idx)) return;
+
+  // Mark asked
+  if (!state.askedQuestions[npc.name]) state.askedQuestions[npc.name] = [];
+  state.askedQuestions[npc.name].push(idx);
+
+  // Type answer
+  const speech = document.getElementById('conv-speech');
+  speech.addEventListener('click', skipTypewriter, { once: true });
+
+  const questionList = document.getElementById('conv-question-list');
+  questionList.querySelectorAll('.question-btn').forEach(b => b.disabled = true);
+
+  typewriter(speech, question.answer, 30, () => {
+    // Handle flags
+    if (question.setsFlag) {
+      state.flags[question.setsFlag] = true;
+    }
+
+    // Grant phrase
+    if (question.phrase) {
+      const alreadyHas = state.phrases.some(p => p.id === question.phrase.id);
+      if (!alreadyHas) {
+        const phrase = { ...question.phrase };
+        state.phrases.push(phrase);
+        showPhrasePopup(phrase, () => {
+          showQuestions(npc);
+          updateFAB();
+        });
+        return;
+      }
+    }
+
+    showQuestions(npc);
+  });
+}
+
+document.getElementById('btn-conv-leave').addEventListener('click', () => {
+  if (!currentConvLoc) { goToTown(); return; }
+
+  const loc = currentConvLoc;
+  if (!state.visitedLocations.includes(loc.id)) {
+    state.visitedLocations.push(loc.id);
+    state.ap = Math.max(0, state.ap - 1);
+  }
+
+  checkSynthesis();
+  saveState();
+  currentConvNpc = null;
+  currentConvLoc = null;
+  goToTown();
+});
+
+// ===================================================================
+//  SCREEN: PRE-NEGOTIATION
+// ===================================================================
+function getNegotiation() {
+  const ch = getCurrentChapter();
+  // Ch3 has battles array
+  if (ch.negotiation && ch.negotiation.battles) {
+    return ch.negotiation.battles[state.ch3BattleIndex || 0];
+  }
+  return ch.negotiation;
+}
+
+function openPreNeg() {
+  const ch = getCurrentChapter();
+  const neg = getNegotiation();
+
+  // Determine target info
+  const targetName = neg.targetName || neg.target || '';
+  const targetEmoji = neg.targetEmoji || (ch.npcs && ch.npcs[neg.target] ? ch.npcs[neg.target].emoji : '?');
+  const targetDesc = neg.targetDesc || (ch.npcs && ch.npcs[neg.target] ? ch.npcs[neg.target].role : '');
+
+  document.getElementById('preneg-portrait').textContent = targetEmoji;
+
+  // Update preneg header
+  const preneg_name = document.querySelector('.preneg-name');
+  if (preneg_name) preneg_name.textContent = `vs ${targetName}`;
+
+  // Update target info in card
+  const preneg_npc_name = document.querySelector('.preneg-npc-name');
+  const preneg_npc_desc = document.querySelector('.preneg-npc-desc');
+  if (preneg_npc_name) preneg_npc_name.textContent = targetName;
+  if (preneg_npc_desc) preneg_npc_desc.textContent = targetDesc;
+
+  // Guard bar
+  const guardMax = neg.maxGuard || 80;
+  const guardFill = document.getElementById('preneg-guard-fill');
+  const guardLabel = document.querySelector('.preneg-info > div:last-of-type');
+  if (guardFill) guardFill.style.width = '100%';
+  const guardValEl = document.querySelector('.preneg-info div[style]');
+
+  // Battle counter (ch3)
+  const preneg_title = document.querySelector('.preneg-title');
+  if (ch.negotiation && ch.negotiation.battles) {
+    const idx = state.ch3BattleIndex || 0;
+    if (preneg_title) preneg_title.textContent = `交渉準備 (${idx + 1}/${ch.negotiation.battles.length})`;
+  } else {
+    if (preneg_title) preneg_title.textContent = '交渉準備';
+  }
+
+  const phrases = state.phrases;
+  document.getElementById('preneg-phrase-count').textContent = phrases.length;
+
+  const list = document.getElementById('preneg-phrases-list');
+  list.innerHTML = '';
+  const noPhrase = document.getElementById('preneg-no-phrase');
+
+  const negTarget = neg.target;
+  const allowAll = neg.allowAllPhrases;
+
+  if (phrases.length === 0) {
+    noPhrase.style.display = 'block';
+  } else {
+    noPhrase.style.display = 'none';
+    phrases.forEach(p => {
+      const isMatch = allowAll || p.target === negTarget || p.target === 'all';
+      const el = document.createElement('div');
+      el.className = 'phrase-card' + (isMatch ? ' target-match' : '');
+      el.innerHTML = `
+        <div class="phrase-card-text">「${p.text}」</div>
+        <div class="phrase-card-power">威力 ${p.power}</div>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  showScreen('preneg');
+  showTutorial('neg_start', '交渉戦: NPCの台詞の裏に隠された本音を見抜いてください。');
+}
+
+document.getElementById('btn-start-neg').addEventListener('click', () => {
+  startNegotiation();
+});
+
+document.getElementById('btn-back-town').addEventListener('click', () => {
+  goToTown();
+});
+
+// ===================================================================
+//  SCREEN: NEGOTIATION
+// ===================================================================
+let negState = {
+  guard: 80,
+  trust: 100,
+  turn: 0,
+  consecutiveMiss: 0,
+  waitingForPhrase: false,
+  pendingDamage: 0,
+  hintShown: false,
+};
+
+function startNegotiation() {
+  const neg = getNegotiation();
+  negState = {
+    guard: neg.maxGuard,
+    trust: neg.initialTrust,
+    turn: 0,
+    consecutiveMiss: 0,
+    waitingForPhrase: false,
+    pendingDamage: 0,
+    hintShown: false,
+  };
+
+  const emoji = neg.targetEmoji || '?';
+  document.getElementById('neg-portrait').textContent = emoji;
+  document.getElementById('neg-speech-portrait').textContent = emoji;
+
+  // Update NPC name in header
+  const negNpcNameEl = document.querySelector('.neg-npc-name');
+  if (negNpcNameEl) negNpcNameEl.textContent = neg.targetName || '';
+
+  // Battle counter for ch3
+  const ch = getCurrentChapter();
+  let battleCounterEl = document.querySelector('.neg-battle-counter');
+  if (ch.negotiation && ch.negotiation.battles) {
+    const idx = state.ch3BattleIndex || 0;
+    const total = ch.negotiation.battles.length;
+    if (!battleCounterEl) {
+      battleCounterEl = document.createElement('div');
+      battleCounterEl.className = 'neg-battle-counter';
+      const npcArea = document.querySelector('.neg-npc-area');
+      if (npcArea) npcArea.appendChild(battleCounterEl);
+    }
+    battleCounterEl.textContent = `交渉 ${idx + 1}/${total}`;
+  } else if (battleCounterEl) {
+    battleCounterEl.textContent = '';
+  }
+
+  updateNegHUD();
+  showScreen('negotiation');
+  nextNegTurn();
+}
+
+function updateNegHUD() {
+  const neg = getNegotiation();
+  const maxGuard = neg.maxGuard;
+  const guardPct = Math.max(0, (negState.guard / maxGuard) * 100);
+  const trustPct = Math.max(0, (negState.trust / 100) * 100);
+
+  document.getElementById('guard-bar').style.width = guardPct + '%';
+  document.getElementById('guard-value').textContent = Math.max(0, negState.guard);
+  document.getElementById('trust-bar').style.width = trustPct + '%';
+  document.getElementById('trust-value').textContent = Math.max(0, negState.trust);
+  document.getElementById('neg-turn-num').textContent = negState.turn + 1;
+
+  // Portrait expression
+  const turns = neg.turns;
+  if (negState.turn < turns.length) {
+    const expr = turns[negState.turn].expression;
+    const portrait = document.getElementById('neg-portrait');
+    const speechPortrait = document.getElementById('neg-speech-portrait');
+    portrait.className = `neg-portrait ${expr || ''}`;
+    speechPortrait.className = `neg-speech-portrait ${expr || ''}`;
+
+    // Ch5: update speaker portrait per turn
+    const turnData = turns[negState.turn];
+    if (turnData.speaker) {
+      const speakerEmoji = turnData.speakerEmoji || neg.targetEmoji || '?';
+      document.getElementById('neg-speech-portrait').textContent = speakerEmoji;
+      // Show speaker name
+      const negNpcNameEl = document.querySelector('.neg-npc-name');
+      if (negNpcNameEl) negNpcNameEl.textContent = turnData.speaker;
+    }
+  }
+}
+
+function nextNegTurn() {
+  const neg = getNegotiation();
+  const turns = neg.turns;
+
+  if (negState.guard <= 0) {
+    triggerConfession();
+    return;
+  }
+
+  if (negState.turn >= turns.length || negState.turn >= neg.maxTurns) {
+    triggerFail(`時間切れ。${neg.targetName || '交渉相手'}の心を開くことができなかった。`);
+    return;
+  }
+
+  const turnData = turns[negState.turn];
+  updateNegHUD();
+
+  const speech = document.getElementById('neg-speech');
+  const choicesGrid = document.getElementById('choices-grid');
+  const hintEl = document.getElementById('neg-hint');
+
+  hintEl.classList.remove('visible');
+  choicesGrid.classList.remove('visible');
+  choicesGrid.querySelectorAll('.choice-btn').forEach(b => {
+    b.disabled = true;
+    b.className = 'choice-btn';
+  });
+
+  speech.addEventListener('click', skipTypewriter, { once: true });
+
+  typewriter(speech, turnData.speech, 30, () => {
+    // Show hint
+    hintEl.textContent = '【ヒント】' + turnData.hint;
+    hintEl.classList.add('visible');
+
+    // Show choices
+    setTimeout(() => {
+      const letters = ['a', 'b', 'c', 'd'];
+      letters.forEach((l, i) => {
+        const btn = document.getElementById('choice-' + l);
+        const textEl = document.getElementById('choice-' + l + '-text');
+        const choice = turnData.choices[i];
+        if (choice) {
+          textEl.textContent = choice.text;
+          btn.disabled = false;
+          btn.onclick = () => handleChoice(i, choice.correct, turnData);
+        }
+      });
+      choicesGrid.classList.add('visible');
+    }, 300);
+  });
+}
+
+function handleChoice(idx, isCorrect, turnData) {
+  const neg = getNegotiation();
+  document.getElementById('choices-grid').querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+  const letters = ['a', 'b', 'c', 'd'];
+  const btn = document.getElementById('choice-' + letters[idx]);
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    flashGreen();
+    negState.consecutiveMiss = 0;
+
+    showTutorial('first_correct', '正解です！ 所持フレーズを選んで相手にぶつけましょう。');
+
+    negState.pendingDamage = turnData.correctDamage;
+
+    setTimeout(() => {
+      openPhraseSelect(turnData);
+    }, 400);
+
+  } else {
+    btn.classList.add('wrong');
+    flashRed();
+    negState.consecutiveMiss++;
+    negState.trust -= neg.penaltyPerWrong;
+
+    updateNegHUD();
+
+    const missFail = neg.consecutiveMissFail || 2;
+    if (negState.trust <= 0 || negState.consecutiveMiss >= missFail) {
+      setTimeout(() => {
+        triggerFail(negState.consecutiveMiss >= missFail
+          ? `${missFail}回連続で見抜きに失敗した。相手は口を閉ざした。`
+          : '信頼度が0になった。');
+      }, 600);
+      return;
+    }
+
+    setTimeout(() => {
+      negState.turn++;
+      nextNegTurn();
+    }, 800);
+  }
+}
+
+// ===================================================================
+//  PHRASE SELECT IN NEGOTIATION
+// ===================================================================
+function openPhraseSelect(turnData) {
+  const overlay = document.getElementById('phrase-select-overlay');
+  const list = document.getElementById('phrase-select-list');
+  const hintEl = document.getElementById('phrase-select-hint');
+  const neg = getNegotiation();
+  const negTarget = neg.target;
+  const allowAll = neg.allowAllPhrases;
+
+  list.innerHTML = '';
+
+  const hasValidPhrase = state.phrases.some(p => allowAll || p.target === negTarget || p.target === 'all');
+  const targetDisplayName = neg.targetName || negTarget;
+  hintEl.textContent = hasValidPhrase ? `★ 緑枠は${targetDisplayName}への有効フレーズ（威力x2）` : '';
+
+  if (state.phrases.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-size:13px; color:var(--text-dim); text-align:center; padding:16px 0; font-style:italic;';
+    empty.textContent = 'フレーズがありません';
+    list.appendChild(empty);
+  } else {
+    state.phrases.forEach(p => {
+      const isValid = allowAll || p.target === negTarget || p.target === 'all';
+      const effectivePower = isValid ? p.power * 2 : p.power;
+
+      const btn = document.createElement('button');
+      btn.className = 'phrase-select-btn' + (isValid ? ' target-match' : '');
+      btn.innerHTML = `
+        <span>「${p.text}」</span>
+        <span class="phrase-select-power ${isValid ? 'boosted' : ''}">
+          ${isValid ? `${effectivePower} (x2)` : effectivePower}
+        </span>
+      `;
+
+      btn.addEventListener('click', () => {
+        applyPhrase(p, turnData, overlay);
+      });
+
+      list.appendChild(btn);
+    });
+  }
+
+  overlay.classList.add('show');
+
+  document.getElementById('phrase-select-skip').onclick = () => {
+    overlay.classList.remove('show');
+    applyDamage(negState.pendingDamage, 0, turnData);
+  };
+}
+
+function applyPhrase(phrase, turnData, overlay) {
+  overlay.classList.remove('show');
+  const neg = getNegotiation();
+  const negTarget = neg.target;
+  const allowAll = neg.allowAllPhrases;
+  const isValid = allowAll || phrase.target === negTarget || phrase.target === 'all';
+  const bonus = isValid ? phrase.power * 2 : phrase.power;
+
+  // Fly animation
+  const card = document.createElement('div');
+  card.className = 'phrase-fly';
+  card.textContent = `「${phrase.text}」`;
+  document.body.appendChild(card);
+
+  const negHeader = document.querySelector('.neg-header');
+  const portrait = document.getElementById('neg-portrait');
+
+  const startRect = { left: window.innerWidth / 2, top: window.innerHeight / 2 };
+  const endRect = portrait.getBoundingClientRect();
+
+  card.style.left = startRect.left + 'px';
+  card.style.top = startRect.top + 'px';
+  card.style.transform = 'translate(-50%, -50%)';
+
+  const keyframes = [
+    { left: startRect.left + 'px', top: startRect.top + 'px', opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+    { left: (endRect.left + endRect.width / 2) + 'px', top: (endRect.top + endRect.height / 2) + 'px', opacity: 0, transform: 'translate(-50%, -50%) scale(0.5)' },
+  ];
+
+  const anim = card.animate(keyframes, { duration: 400, easing: 'ease-in' });
+  anim.onfinish = () => {
+    card.remove();
+    applyDamage(negState.pendingDamage, bonus, turnData);
+  };
+}
+
+function applyDamage(baseDmg, bonusDmg, turnData) {
+  const total = baseDmg + bonusDmg;
+  negState.guard -= total;
+
+  updateNegHUD();
+
+  // Animate guard bar
+  const fill = document.getElementById('guard-bar');
+  fill.classList.add('fade-in');
+  setTimeout(() => fill.classList.remove('fade-in'), 600);
+
+  if (negState.guard <= 0) {
+    negState.guard = 0;
+    updateNegHUD();
+    setTimeout(() => triggerConfession(), 800);
+  } else {
+    negState.turn++;
+    setTimeout(() => nextNegTurn(), 600);
+  }
+}
+
+// ===================================================================
+//  CONFESSION
+// ===================================================================
+function triggerConfession() {
+  showScreen('confession');
+
+  const neg = getNegotiation();
+  const spotlight = document.getElementById('confession-spotlight');
+  const portrait = document.getElementById('confession-portrait');
+  const nameEl = document.getElementById('confession-npc-name');
+  const textEl = document.getElementById('confession-text');
+  const continueEl = document.getElementById('confession-continue');
+
+  portrait.textContent = neg.targetEmoji || '?';
+  nameEl.textContent = neg.targetName || '';
+  continueEl.textContent = '';
+
+  // Reset opacity
+  spotlight.style.opacity = '0';
+  portrait.style.opacity = '0';
+  nameEl.style.opacity = '0';
+  textEl.style.opacity = '0';
+
+  setTimeout(() => { spotlight.style.opacity = '1'; }, 200);
+  setTimeout(() => { portrait.style.opacity = '1'; }, 400);
+  setTimeout(() => { nameEl.style.opacity = '1'; }, 600);
+
+  setTimeout(() => {
+    textEl.style.opacity = '1';
+    textEl.addEventListener('click', skipTypewriter, { once: true });
+    typewriter(textEl, neg.confession, 30, () => {
+      continueEl.textContent = '（クリックで続ける）';
+      textEl.addEventListener('click', () => {
+        afterConfession();
+      }, { once: true });
+    });
+  }, 1200);
+}
+
+function afterConfession() {
+  const ch = getCurrentChapter();
+  // Ch3 double battle: check if more battles remain
+  if (ch.negotiation && ch.negotiation.battles) {
+    const nextIdx = (state.ch3BattleIndex || 0) + 1;
+    if (nextIdx < ch.negotiation.battles.length) {
+      state.ch3BattleIndex = nextIdx;
+      // Reset neg for next battle
+      openPreNeg();
+      return;
+    }
+  }
+
+  // Ch5: go to ending choice
+  if (state.chapter === 5) {
+    goToResult();
+    return;
+  }
+
+  goToResult();
+}
+
+// ===================================================================
+//  FAIL
+// ===================================================================
+function triggerFail(reason) {
+  document.getElementById('fail-desc').textContent = reason + `\n\n（第${state.chapter}章はリトライ可能です）`;
+  showScreen('fail');
+}
+
+document.getElementById('btn-retry').addEventListener('click', () => {
+  // For ch3, reset to the current battle index (don't restart from battle 0)
+  startNegotiation();
+});
+
+document.getElementById('btn-fail-town').addEventListener('click', () => {
+  goToTown();
+});
+
+// ===================================================================
+//  RESULT
+// ===================================================================
+function goToResult() {
+  const ch = getCurrentChapter();
+  const reward = ch.negotiation.reward || { exp: 100, factions: {} };
+
+  showScreen('result');
+  state.negDone = true;
+
+  // Update result chapter label
+  const resultChapterEl = document.querySelector('.result-chapter');
+  if (resultChapterEl) resultChapterEl.textContent = `第${state.chapter}章 クリア`;
+
+  const expGain = reward.exp;
+  const lvUp = addExp(expGain);
+
+  document.getElementById('result-exp').textContent = `+${expGain} EXP （合計: ${state.exp}）`;
+
+  const lvUpEl = document.getElementById('result-levelup');
+  if (lvUp) {
+    const unlock = LEVEL_TABLE.find(e => e.lv === lvUp)?.unlock || '';
+    document.getElementById('result-levelup-text').textContent = `Lv.${lvUp} 達成！ 解放: ${unlock}`;
+    lvUpEl.classList.add('show');
+  } else {
+    lvUpEl.classList.remove('show');
+  }
+
+  // Factions
+  const factions = reward.factions || {};
+  Object.entries(factions).forEach(([k, v]) => {
+    state.factions[k] = (state.factions[k] || 0) + v;
+  });
+
+  // Render faction changes
+  const factionContainer = document.querySelector('.result-faction');
+  if (factionContainer) {
+    factionContainer.innerHTML = '<div class="section-header" style="text-align:center; border:none;">勢力変動</div>';
+    Object.entries(factions).forEach(([k, v]) => {
+      const row = document.createElement('div');
+      row.className = 'faction-row';
+      row.innerHTML = `<span>${k}</span><span class="faction-change ${v >= 0 ? 'positive' : 'negative'}">${v >= 0 ? '+' : ''}${v}</span>`;
+      factionContainer.appendChild(row);
+    });
+    if (Object.keys(factions).length === 0) {
+      const row = document.createElement('div');
+      row.style.cssText = 'font-size:13px; color:var(--text-dim); text-align:center; padding:8px;';
+      row.textContent = '勢力変動なし';
+      factionContainer.appendChild(row);
+    }
+  }
+
+  if (!state.clearedChapters.includes(state.chapter)) {
+    state.clearedChapters.push(state.chapter);
+  }
+  saveState();
+}
+
+document.getElementById('btn-to-chapterend').addEventListener('click', () => {
+  if (state.chapter === 5) {
+    openEndingChoice();
+  } else {
+    startChapterEnd();
+  }
+});
+
+// ===================================================================
+//  CHAPTER END
+// ===================================================================
+function startChapterEnd() {
+  const ch = getCurrentChapter();
+  showScreen('chapterend');
+
+  // Update labels
+  const labelEl = document.getElementById('chapterend-label');
+  if (labelEl) labelEl.textContent = `第${state.chapter}章 終幕`;
+
+  const nextChapter = state.chapter + 1;
+  const hasNextChapter = nextChapter <= 5;
+
+  const textEl = document.getElementById('chapterend-text');
+  const nextEl = document.getElementById('chapterend-next');
+  const doneBtn = document.getElementById('btn-chapterend-done');
+
+  nextEl.classList.remove('show');
+  doneBtn.classList.add('hidden');
+
+  if (hasNextChapter) {
+    nextEl.textContent = `第${nextChapter}章へ続く…`;
+  } else {
+    nextEl.textContent = '';
+  }
+
+  textEl.addEventListener('click', skipTypewriter, { once: true });
+
+  typewriter(textEl, ch.chapterEndText, 35, () => {
+    setTimeout(() => {
+      if (hasNextChapter) nextEl.classList.add('show');
+      setTimeout(() => {
+        doneBtn.classList.remove('hidden');
+        doneBtn.classList.add('fade-in');
+        doneBtn.textContent = hasNextChapter ? `第${nextChapter}章へ` : 'タイトルに戻る';
+      }, 1500);
+    }, 600);
+  });
+}
+
+document.getElementById('btn-chapterend-done').addEventListener('click', () => {
+  const nextChapter = state.chapter + 1;
+  if (nextChapter <= 5) {
+    // Advance to next chapter, keep phrases, reset chapter-specific state
+    state.chapter = nextChapter;
+    state.visitedLocations = [];
+    state.askedQuestions = {};
+    state.negDone = false;
+    state.ch3BattleIndex = 0;
+    state.ap = getCurrentChapter().ap || 3;
+    saveState();
+    startChapterIntro();
+  } else {
+    initTitle();
+  }
+});
+
+// ===================================================================
+//  ENDING CHOICE (Ch5)
+// ===================================================================
+function openEndingChoice() {
+  showScreen('endingchoice');
+  const endings = CHAPTER5.endings;
+  const cardsEl = document.getElementById('ending-cards');
+  cardsEl.innerHTML = '';
+
+  endings.forEach(ending => {
+    const btn = document.createElement('button');
+    btn.className = 'ending-card-btn';
+    btn.innerHTML = `
+      <div class="ending-card-title">${ending.title}</div>
+      <div class="ending-card-desc">${ending.desc}</div>
+    `;
+    btn.addEventListener('click', () => {
+      state.endingChosen = ending.id;
+      saveState();
+      startEnding(ending);
+    });
+    cardsEl.appendChild(btn);
+  });
+}
+
+// ===================================================================
+//  ENDING SCREEN (Ch5)
+// ===================================================================
+function startEnding(ending) {
+  showScreen('ending');
+
+  const labelEl = document.getElementById('ending-label');
+  const titleEl = document.getElementById('ending-title');
+  const textEl = document.getElementById('ending-text');
+  const creditsEl = document.getElementById('ending-credits');
+  const doneBtn = document.getElementById('btn-ending-done');
+
+  if (labelEl) labelEl.textContent = 'エンディング';
+  if (titleEl) titleEl.textContent = ending.title;
+  creditsEl.classList.remove('show');
+  doneBtn.classList.add('hidden');
+
+  textEl.style.opacity = '0';
+  textEl.textContent = '';
+
+  setTimeout(() => {
+    textEl.style.opacity = '1';
+    textEl.addEventListener('click', skipTypewriter, { once: true });
+    typewriter(textEl, ending.text, 28, () => {
+      setTimeout(() => {
+        creditsEl.classList.add('show');
+        setTimeout(() => {
+          doneBtn.classList.remove('hidden');
+          doneBtn.classList.add('fade-in');
+        }, 2000);
+      }, 1000);
+    });
+  }, 500);
+}
+
+document.getElementById('btn-ending-done').addEventListener('click', () => {
+  initTitle();
+});
+
+// ===================================================================
+//  PHRASEBOOK FAB
+// ===================================================================
+document.getElementById('phrasebook-fab').addEventListener('click', openPhrasebook);
+document.getElementById('phrasebook-close').addEventListener('click', closePhrasebook);
+
+// Close on backdrop click
+document.getElementById('phrasebook-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('phrasebook-overlay')) closePhrasebook();
+});
+
+// ===================================================================
+//  BOOT
+// ===================================================================
+initTitle();
+</script>
+</body>
+</html>
