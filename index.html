@@ -308,6 +308,11 @@ html, body {
   opacity: 0.6;
 }
 
+.location-card.scouted {
+  border-color: rgba(139,115,85,0.4);
+  opacity: 0.8;
+}
+
 .location-card.disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -1261,6 +1266,231 @@ html, body {
   letter-spacing: 0.1em;
 }
 
+/* ===== INTUITION PHASE ===== */
+.intuition-phase {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.intuition-phase.visible {
+  display: flex;
+}
+
+.intuition-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.intuition-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.intuition-btn {
+  text-align: center;
+  padding: 12px 10px;
+  font-size: clamp(12px, 1.8vw, 13px);
+  line-height: 1.4;
+  background: var(--bg-card);
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  min-height: 48px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.intuition-btn:hover {
+  background: var(--choice-hover);
+  border-color: var(--ui-border);
+  color: var(--text);
+}
+
+.intuition-result {
+  font-size: 14px;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-style: italic;
+  display: none;
+}
+
+.intuition-result.hit {
+  display: block;
+  color: var(--correct);
+  background: rgba(0,210,160,0.1);
+  border: 1px solid rgba(0,210,160,0.3);
+}
+
+.intuition-result.miss {
+  display: block;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(139,115,85,0.3);
+}
+
+.stage-direction {
+  font-size: 13px;
+  color: #8b7355;
+  font-style: italic;
+  padding: 4px 0 8px 0;
+}
+
+/* ===== CRITICAL PHRASE ===== */
+.critical-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255,215,0,0.8);
+  z-index: 8000;
+  pointer-events: none;
+  letter-spacing: 0.1em;
+}
+
+/* ===== SYNTHESIS MODE ===== */
+.synthesis-mode .phrase-card {
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.synthesis-mode .phrase-card:hover {
+  border-color: var(--hint);
+  background: rgba(255,165,2,0.05);
+}
+
+.synthesis-mode .phrase-card.selected {
+  border-color: var(--hint);
+  background: rgba(255,165,2,0.1);
+}
+
+.phrasebook-synth-btn {
+  margin-top: 8px;
+  font-size: 13px;
+  padding: 10px 16px;
+  min-height: 40px;
+  background: rgba(255,165,2,0.1);
+  border-color: var(--hint);
+  color: var(--hint);
+}
+
+.phrasebook-synth-btn:hover {
+  background: rgba(255,165,2,0.2);
+}
+
+.synth-select-area {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.synth-select-area.visible {
+  display: flex;
+}
+
+.synth-go-btn {
+  padding: 10px 16px;
+  font-size: 13px;
+  min-height: 40px;
+  background: rgba(0,210,160,0.1);
+  border-color: var(--correct);
+  color: var(--correct);
+}
+
+.synth-go-btn:hover {
+  background: rgba(0,210,160,0.2);
+}
+
+.synth-go-btn:disabled {
+  opacity: 0.4;
+}
+
+.synth-cancel-btn {
+  padding: 8px 16px;
+  font-size: 12px;
+  min-height: 36px;
+}
+
+/* ===== PHRASE USED BADGE ===== */
+.phrase-card.used-phrase {
+  opacity: 0.4;
+}
+
+.phrase-used-badge {
+  font-size: 10px;
+  color: var(--text-dim);
+  background: rgba(0,0,0,0.4);
+  border-radius: 2px;
+  padding: 1px 4px;
+  margin-left: 6px;
+}
+
+/* ===== PHRASEBOOK FAB GLOW ===== */
+@keyframes fabGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(255,165,2,0); border-color: var(--ui-border); }
+  50% { box-shadow: 0 0 12px rgba(255,165,2,0.6); border-color: var(--hint); }
+}
+
+.phrasebook-fab.can-synth {
+  animation: fabGlow 1.5s ease-in-out infinite;
+}
+
+/* ===== SCOUT TEXT ===== */
+.scout-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.scout-popup.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scout-popup-card {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  max-width: 440px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scout-popup-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.scout-popup-text {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.8;
+}
+
 /* ===== ENDING SCREEN ===== */
 #screen-ending {
   justify-content: center;
@@ -1377,6 +1607,67 @@ html, body {
   font-size: 13px;
   color: var(--text-dim);
 }
+
+/* ===== SCORE RATING ===== */
+.score-rating-box {
+  background: var(--bg-sub);
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  padding: 16px 20px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-rank {
+  font-size: 52px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.score-rank.rank-s { color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+.score-rank.rank-a { color: var(--correct); text-shadow: 0 0 16px rgba(0,210,160,0.5); }
+.score-rank.rank-b { color: #4da6ff; }
+.score-rank.rank-c { color: var(--text-dim); }
+.score-rank.rank-d { color: var(--fail); }
+
+.score-rank-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.score-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.score-detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.score-detail-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.score-rank-desc {
+  font-size: 13px;
+  color: var(--hint);
+  font-style: italic;
+  text-align: center;
+  margin-top: 4px;
+}
 </style>
 </head>
 <body>
@@ -1391,6 +1682,15 @@ html, body {
 
   <!-- ===== PHRASEBOOK FAB ===== -->
   <button class="phrasebook-fab" id="phrasebook-fab" title="フレーズ帳" aria-label="フレーズ帳を開く">📖</button>
+
+  <!-- ===== SCOUT TEXT POPUP ===== -->
+  <div class="scout-popup" id="scout-popup">
+    <div class="scout-popup-card">
+      <div class="scout-popup-label">偵察 — 観察記録</div>
+      <div class="scout-popup-text" id="scout-popup-text"></div>
+      <button class="btn" id="scout-popup-close">立ち去る</button>
+    </div>
+  </div>
 
   <!-- ===== PHRASE ACQUISITION POPUP ===== -->
   <div class="phrase-popup" id="phrase-popup">
@@ -1407,6 +1707,16 @@ html, body {
     <div class="phrasebook-card">
       <div class="phrasebook-title">📖 フレーズ帳</div>
       <div class="phrases-list" id="phrasebook-list"></div>
+      <div class="synth-select-area" id="synth-select-area">
+        <div style="font-size:12px; color:var(--text-dim); text-align:center;">2つのフレーズを選んで合成する</div>
+        <div style="font-size:11px; color:var(--hint); text-align:center;" id="synth-selected-label">選択中: 0 / 2</div>
+        <button class="btn synth-go-btn" id="btn-synth-go" disabled>合成する</button>
+        <button class="btn synth-cancel-btn" id="btn-synth-cancel">キャンセル</button>
+      </div>
+      <div id="phrasebook-synth-area">
+        <button class="btn phrasebook-synth-btn hidden" id="btn-open-synth">✨ 合成を試す</button>
+        <div style="font-size:12px; color:var(--text-dim); text-align:center; padding:4px 0; display:none;" id="synth-locked-msg">Lv5で合成が解放されます</div>
+      </div>
       <button class="btn" id="phrasebook-close">閉じる</button>
     </div>
   </div>
@@ -1481,6 +1791,7 @@ html, body {
       </div>
     </div>
     <div class="conv-body">
+      <div id="conv-scout-obs" style="display:none; color:#8b7355; font-style:italic; font-size:0.9em; margin-bottom:12px; padding:8px 12px; border-left:2px solid #8b7355;"></div>
       <div class="speech-bubble" id="conv-speech" title="クリックでスキップ"></div>
       <div class="questions-label" id="conv-questions-label" style="display:none;">— 何を聞く？</div>
       <div class="question-list" id="conv-question-list"></div>
@@ -1552,8 +1863,19 @@ html, body {
         <div class="neg-speech-portrait" id="neg-speech-portrait"></div>
         <div class="neg-speech-bubble" id="neg-speech" title="クリックでスキップ"></div>
       </div>
+      <div class="stage-direction" id="stage-direction" style="display:none;"></div>
       <div class="neg-hint" id="neg-hint"></div>
-      <div class="subtext-label">— サブテクストを読め</div>
+      <div class="intuition-phase" id="intuition-phase">
+        <div class="intuition-label">── この人物の態度を読め ──</div>
+        <div class="intuition-choices">
+          <button class="intuition-btn" data-type="lying">嘘をついている</button>
+          <button class="intuition-btn" data-type="deflecting">話題を逸らしている</button>
+          <button class="intuition-btn" data-type="hiding_emotion">感情を隠している</button>
+          <button class="intuition-btn" data-type="truthful">本当のことを言っている</button>
+        </div>
+      </div>
+      <div class="intuition-result" id="intuition-result"></div>
+      <div class="subtext-label" id="subtext-label" style="display:none;">— サブテクストを読め</div>
       <div class="choices-grid" id="choices-grid">
         <button class="choice-btn" id="choice-a"><span class="choice-letter">A</span><span id="choice-a-text"></span></button>
         <button class="choice-btn" id="choice-b"><span class="choice-letter">B</span><span id="choice-b-text"></span></button>
@@ -1577,6 +1899,12 @@ html, body {
     <div class="result-chapter">第1章 クリア</div>
     <div class="result-status" id="result-status">TRUTH REVEALED</div>
     <div class="result-divider"></div>
+    <div class="score-rating-box" id="score-rating-box">
+      <div class="score-rank-label">読み手の評価</div>
+      <div class="score-rank rank-a" id="score-rank">A</div>
+      <div class="score-rank-desc" id="score-rank-desc"></div>
+      <div class="score-details" id="score-details"></div>
+    </div>
     <div class="result-exp-gain" id="result-exp">+150 EXP</div>
     <div class="result-levelup" id="result-levelup">
       <div class="result-levelup-label">LEVEL UP!</div>
@@ -1651,6 +1979,7 @@ const CHAPTER1 = {
       icon: '📦',
       npcId: 'marco',
       desc: '依頼者マルコが待つ',
+      scoutText: 'マルコは倉庫の空っぽになった棚を呆然と眺めている。依頼者本人だ。話を聞けば積荷の詳細がわかるかもしれない。',
     },
     {
       id: 'dock',
@@ -1658,6 +1987,7 @@ const CHAPTER1 = {
       icon: '⚓',
       npcId: 'garcia',
       desc: '衛兵ガルシアが巡回中',
+      scoutText: 'ガルシアは巡回の報告書を書いている。…妙に落ち着かない様子だ。何かを気にしているように見える。視線が時折、港の方角へ飛ぶ。',
     },
     {
       id: 'tavern',
@@ -1665,6 +1995,7 @@ const CHAPTER1 = {
       icon: '🍺',
       npcId: 'teresa',
       desc: '女将テレサが知っているかも',
+      scoutText: 'テレサは常連客と話しながらも、こちらの様子を観察している。港のことは何でも知っていそうだ。情報量が多い相手に見える。',
     },
     {
       id: 'church',
@@ -1672,6 +2003,7 @@ const CHAPTER1 = {
       icon: '⛪',
       npcId: 'orlando',
       desc: '司祭オルランドに告解',
+      scoutText: 'オルランドは静かに祈りを捧げている。告解室には最近人が多く訪れるようだ。罪を抱えた者が増えているのかもしれない。',
     },
   ],
   npcs: {
@@ -1683,16 +2015,19 @@ const CHAPTER1 = {
       questions: [
         {
           text: '積荷はいつ届くはずだった？',
+          approachType: 'trust',
           answer: '昨夜の夜半だ。船は予定通り入港した。荷降ろしまでは確認したんだが…朝になったら倉庫が空だった。',
           phrase: { id: 'marco_1', text: '荷降ろしまでは確認した', power: 12, target: 'garcia' },
         },
         {
           text: '誰か怪しい人物に心当たりは？',
+          approachType: 'direct',
           answer: '分からん。だが…夜間の港の管理は衛兵のガルシアの担当だ。あいつに聞いてみてくれ。',
           phrase: { id: 'marco_2', text: '夜間の港はガルシアの担当', power: 18, target: 'garcia' },
         },
         {
           text: '積荷の価値はどれくらい？',
+          approachType: 'trust',
           answer: '金貨200枚相当だ。…正直、これが戻らなければ俺は破産する。頼む、読み手殿。',
           phrase: null,
         },
@@ -1706,16 +2041,20 @@ const CHAPTER1 = {
       questions: [
         {
           text: '昨夜の港の様子を教えてくれ。',
+          approachType: 'trust',
           answer: 'いつも通りだ。特に変わったことはない。船が入って、荷を降ろして、俺は見回りをしていた。それだけだ。',
           phrase: { id: 'garcia_1', text: '特に変わったことはない', power: 15, target: 'garcia' },
         },
         {
           text: 'マルコの積荷を見たか？',
+          approachType: 'direct',
           answer: 'ああ、検問で確認した。高級な絹だろ？ 通関の書類に判を押したよ。…それがどうした。',
           phrase: { id: 'garcia_2', text: '検問で確認して判を押した', power: 20, target: 'garcia' },
+          blocksSecret: true,
         },
         {
           text: '最近、困っていることはないか？',
+          approachType: 'trust',
           answer: '…困っている？ 何でそんなことを聞く。俺は元気だ。仕事もちゃんとやっている。余計なお世話だ。',
           phrase: { id: 'garcia_3', text: '余計なお世話だ（過剰な防衛反応）', power: 10, target: 'garcia' },
           setsFlag: 'garcia_defensive',
@@ -1730,16 +2069,19 @@ const CHAPTER1 = {
       questions: [
         {
           text: '昨夜、この辺りで何かあった？',
+          approachType: 'trust',
           answer: '昨夜？ そうねえ…いつもより港が騒がしかったわ。深夜に荷車の音がしてね。こんな時間に、と思ったけど。',
           phrase: { id: 'teresa_1', text: '深夜に荷車の音がした', power: 18, target: 'garcia' },
         },
         {
           text: '衛兵のガルシアをどう思う？',
+          approachType: 'trust',
           answer: 'ガルシアねえ…真面目な男よ。でも最近、顔色が悪いわ。何か悩みを抱えてるみたい。…うちにも飲みに来なくなったし。',
           phrase: { id: 'teresa_2', text: '最近ガルシアの顔色が悪い', power: 12, target: 'garcia' },
         },
         {
           text: '影の舟について何か知ってる？',
+          approachType: 'direct',
           answer: '…その名前、あまり大きな声で言わない方がいいわ。私は何も知らない。知りたくもない。…ただ、港の近くで見慣れない船が停泊してることは、ある。',
           phrase: { id: 'teresa_3', text: '見慣れない船が港に停泊', power: 10, target: 'all' },
         },
@@ -1753,17 +2095,20 @@ const CHAPTER1 = {
       questions: [
         {
           text: '昨夜、教会から港は見えるか？',
+          approachType: 'trust',
           answer: 'ええ、鐘楼からは港が一望できます。…ですが昨夜は祈祷の時間でしたので、外は見ておりません。',
           phrase: { id: 'orlando_1', text: '鐘楼から港が一望できる', power: 8, target: 'all' },
         },
         {
           text: '最近、告解で変わったことは？',
+          approachType: 'trust',
           answer: '告解の内容は神聖なもの、お話しすることはできません。…ただ、人は罪を犯す時、必ず理由があるものです。',
           phrase: { id: 'orlando_2', text: '人は罪を犯す時、必ず理由がある', power: 15, target: 'garcia', type: 'secret' },
           requiresFlag: 'garcia_defensive',
         },
         {
           text: 'ガルシアの家族のことを知っているか？',
+          approachType: 'direct',
           answer: 'ガルシアの奥方は…半年ほど前から体調を崩されています。教会でも祈りを捧げておりますが…医療費は、相当かかっているようです。',
           phrase: { id: 'orlando_3', text: 'ガルシアの妻は半年前から病気', power: 25, target: 'garcia', type: 'secret' },
         },
@@ -1772,59 +2117,101 @@ const CHAPTER1 = {
   },
   negotiation: {
     target: 'garcia',
-    maxGuard: 80,
-    maxTurns: 10,
+    maxGuard: 150,
+    maxTurns: 12,
     initialTrust: 100,
-    penaltyPerWrong: 20,
-    consecutiveMissFail: 2,
+    penaltyPerWrong: 15,
+    consecutiveMissFail: 3,
     turns: [
       {
         speech: '荷物のことか？ 俺は何も見ていない。いつも通り巡回していただけだ。',
-        hint: '「いつも通り」を不自然に強調している。',
+        hint: '人は確信があるとき、詳細を語る。確信がないとき、抽象に逃げる。',
         expression: 'nervous',
+        intuitionCorrect: 'lying',
+        intuitionHit: '（「いつも通り」と言いながら視線が左下に逸れた）',
+        bestPhraseIds: ['marco_2', 'garcia_1'],
         choices: [
-          { text: '本当に何も知らない', correct: false },
-          { text: '見たが直接は関与していない', correct: false },
-          { text: '犯人を目撃したが脅されて黙っている', correct: false },
-          { text: '自分が関与している。「いつも通り」を強調して正常性を装っている', correct: true },
+          { text: '現場を見たが内容まで確認していなかった', correct: false },
+          { text: '確認義務を果たしたうえで何も異常がなかった', correct: false },
+          { text: '「いつも通り」という言葉で、具体的な記憶への言及を意図的に避けている', correct: true },
+          { text: '管轄外の事案として関与を断っている', correct: false },
         ],
-        correctDamage: 20,
+        correctDamage: 5,
       },
       {
         speech: '…なぜ俺を疑う？ 衛兵が荷を盗むわけがないだろう。俺には何の得もない。',
-        hint: '「何の得もない」と自ら金銭の話題を持ち出した。',
+        hint: '相手が自発的に持ち出した話題は、その人の頭の中で最も大きな懸念を反映している。',
         expression: 'angry',
+        intuitionCorrect: 'deflecting',
+        intuitionHit: '（聞かれてもいない「得がない」という言葉が口をついた）',
+        bestPhraseIds: ['garcia_2', 'teresa_1'],
         choices: [
-          { text: '本当に動機がない', correct: false },
-          { text: '金銭的動機から目を逸らそうとしている', correct: true },
-          { text: '共犯者をかばっている', correct: false },
-          { text: '衛兵の立場を盾にしている', correct: false },
+          { text: '職業倫理への誇りから抗議している', correct: false },
+          { text: '衛兵という職の信頼性を防盾として使っている', correct: false },
+          { text: '「得がない」という言葉は、利益の存在を無意識に意識している証拠だ', correct: true },
+          { text: '冤罪に憤慨する無実の人間の自然な反応だ', correct: false },
         ],
-        correctDamage: 15,
+        correctDamage: 5,
       },
       {
         speech: 'いい加減にしてくれ。俺は家族を養うために真面目に働いているんだ。これ以上の侮辱は許さんぞ。',
-        hint: '「家族を養う」だけが嘘ではない。動機が透けている。',
+        hint: '感情の激化は、触れられたくない核心に近づいたことを示す場合がある。ただし、本物の怒りと演技は似ている。',
         expression: 'angry',
+        intuitionCorrect: 'hiding_emotion',
+        intuitionHit: '（「家族」という言葉を口にした瞬間、声が震えた）',
+        bestPhraseIds: ['garcia_3', 'orlando_2'],
         choices: [
-          { text: '正直者の怒り', correct: false },
-          { text: '同情を引こうとしている', correct: false },
-          { text: '「家族を養う」に本音が漏れている。金が必要だった動機の告白', correct: true },
-          { text: '脅しで追及を止めさせようとしている', correct: false },
+          { text: '正当な怒りだ。無実だからこそ感情的になっている', correct: false },
+          { text: '家族を持ち出すことで、質問者の良心に訴えかけようとしている', correct: false },
+          { text: '「家族を養う」という具体的な言葉が、金銭的切迫の実情を滲ませている', correct: true },
+          { text: '威圧によって追及を打ち切らせようとしている', correct: false },
         ],
-        correctDamage: 25,
+        correctDamage: 5,
+      },
+      {
+        speech: '…深夜に荷車の音？ そんな話は聞いていない。港は常に荷物の出入りがある。珍しくもない。',
+        hint: '否定の速さと内容の質は、情報の既知性を示すことがある。',
+        expression: 'nervous',
+        intuitionCorrect: 'truthful',
+        intuitionHit: '（初めて、嘘のない声が聞こえた）',
+        bestPhraseIds: ['teresa_1', 'marco_1'],
+        choices: [
+          { text: '深夜の物音に慣れた夜勤の感覚として自然な答えだ', correct: false },
+          { text: '「聞いていない」という否定は、内容を否定していない。存在は認めた', correct: true },
+          { text: '港の業務実態を正確に説明している', correct: false },
+          { text: '証言の信憑性を揺るがそうとしている', correct: false },
+        ],
+        correctDamage: 5,
+      },
+      {
+        speech: '…妻が? 何を調べた。それは…俺の家族の話だ。仕事とは関係ない。',
+        hint: '「仕事とは関係ない」という言葉は、接続を断ち切るための言葉だ。接続があるから断ち切る必要がある。',
+        expression: 'sad',
+        intuitionCorrect: 'hiding_emotion',
+        intuitionHit: '（拳を握りしめている。怒りではなく、恐怖だ）',
+        bestPhraseIds: ['orlando_3', 'garcia_3'],
+        choices: [
+          { text: 'プライバシーへの侵害に憤慨する正当な反応だ', correct: false },
+          { text: '家族の話が仕事に影響していないという事実の確認だ', correct: false },
+          { text: '家族と仕事を切り離すことで、二つの繋がりを隠そうとしている', correct: true },
+          { text: '感情的になって判断が乱れている状態だ', correct: false },
+        ],
+        correctDamage: 5,
       },
       {
         speech: '…もういい。俺がどう言っても、あんたは信じないんだろう。好きにしてくれ。',
-        hint: '声のトーンが落ちた。あと一押し。',
+        hint: '抵抗から放棄への転換は、力の尽きを意味することもあれば、別の何かの始まりを意味することもある。',
         expression: 'sad',
+        intuitionCorrect: 'lying',
+        intuitionHit: '（最後の虚勢。だが声には力がない）',
+        bestPhraseIds: ['orlando_3', 'synth_1'],
         choices: [
-          { text: '諦めの境地。戦う気力が尽きた', correct: true },
-          { text: '諦めたふりをした策略', correct: false },
-          { text: '本音を言いたいがまだ踏み切れない', correct: false },
-          { text: '時間稼ぎ', correct: false },
+          { text: '戦略的な降伏。まだ何かを隠している', correct: false },
+          { text: '防衛の継続コストが、隠すことの価値を超えた状態だ', correct: true },
+          { text: '信頼が完全に失われ、協力意欲がなくなった', correct: false },
+          { text: 'もう一押しで告白する手前の演技だ', correct: false },
         ],
-        correctDamage: 20,
+        correctDamage: 5,
       },
     ],
     confession: '…分かったよ。もう隠せない。俺がやった。あの絹は…「影の舟」に流した。半年前、女房が病気になった。薬代が払えなくて…そんな時、奴らが声をかけてきたんだ。「荷物を一つ見逃すだけでいい。報酬は金貨50枚」と。最初は一度きりのつもりだった。だが、一度手を染めたら…もう戻れなかった。マルコには悪いと思っている。だが、家族を見捨てることはできなかった。…俺を、どうするつもりだ？',
@@ -1838,17 +2225,17 @@ const CHAPTER1 = {
 //  CHAPTER 2 DATA — 「消えた令嬢」
 // ===================================================================
 const CHAPTER2 = {
-  ap: 4,
+  ap: 3,
   title: '消えた令嬢',
   locationName: 'ポルタ・ヴェリタス（商業区）',
   mission: 'ギルド長の娘エレナが失踪した。依頼者マルグリットと交渉し、「誘拐」の真相を明らかにせよ。',
   introText: '商人ギルド長マルグリットの娘エレナが三日前から行方不明だという。「誘拐」と騒ぐ母の背後に、隠された真実がある。娘は本当に連れ去られたのか――それとも、自ら飛び立ったのか。',
   locations: [
-    { id: 'guild_hq', name: 'ギルド本部', icon: '🏛️', npcId: 'marguerite', desc: 'ギルド長マルグリットが待つ' },
-    { id: 'cathedral_yard', name: '聖堂裏庭', icon: '🌿', npcId: 'ria', desc: '修道女リアがいる' },
-    { id: 'harbor_inn', name: '港の宿屋', icon: '🛏️', npcId: 'dario', desc: '宿屋のダリオ' },
-    { id: 'back_alley', name: '裏通り', icon: '🐀', npcId: 'rat', desc: '情報屋「鼠」の縄張り' },
-    { id: 'elena_room', name: "エレナの部屋", icon: '🪟', npcId: 'sofia', desc: '侍女ソフィアが片づけている' },
+    { id: 'guild_hq', name: 'ギルド本部', icon: '🏛️', npcId: 'marguerite', desc: 'ギルド長マルグリットが待つ', scoutText: 'マルグリットは窓の外を何度も見ている。焦りというより、何かを探しているようだ。依頼者本人だが、話を聞けば意外な情報が得られるかもしれない。' },
+    { id: 'cathedral_yard', name: '聖堂裏庭', icon: '🌿', npcId: 'ria', desc: '修道女リアがいる', scoutText: 'リアは花の手入れをしながら、時折遠くを見つめている。何かを知っていて、誰かに話したがっているような表情だ。' },
+    { id: 'harbor_inn', name: '港の宿屋', icon: '🛏️', npcId: 'dario', desc: '宿屋のダリオ', scoutText: 'ダリオは帳簿を確認しながらも、三日前の客について何か引っかかりがあるようだ。宿屋主人はよく人を観察している。' },
+    { id: 'back_alley', name: '裏通り', icon: '🐀', npcId: 'rat', desc: '情報屋「鼠」の縄張り', scoutText: '「鼠」は物陰から様子を見ている。情報屋だけあって、既に何かを知っている様子だ。ただし代価を求めるかもしれない。' },
+    { id: 'elena_room', name: "エレナの部屋", icon: '🪟', npcId: 'sofia', desc: '侍女ソフィアが片づけている', scoutText: 'ソフィアはエレナの持ち物を丁寧に整理している。彼女はエレナを長く見てきた人物だ。細かな事実を知っているはずだ。' },
   ],
   npcs: {
     marguerite: {
@@ -1859,17 +2246,20 @@ const CHAPTER2 = {
       questions: [
         {
           text: 'エレナが消えた日、何か変わったことは？',
+          approachType: 'trust',
           answer: '…いいえ、いつも通りの夜だった。夕食を一緒にとって、エレナは部屋に戻った。朝になって、部屋はもぬけの殻だった。…窓が開いていた。',
           phrase: { id: 'marg_1', text: '窓が開いていた', power: 12, target: 'marguerite' },
         },
         {
           text: 'エレナに最近、悩みはなかったか？',
+          approachType: 'direct',
           answer: 'あの子に悩みなど…何不自由なく育ててきた。ギルド長の娘として、最高の教育も、最高の暮らしも与えてきた。…悩むことなど、あるはずがない。',
           phrase: { id: 'marg_2', text: '悩むことなどあるはずがない（断言）', power: 18, target: 'marguerite' },
           setsFlag: 'marguerite_denial',
         },
         {
           text: '犯人の心当たりは？',
+          approachType: 'direct',
           answer: 'この港には怪しい連中がいる。影の舟か…それとも教会の誰かかもしれない。何でもいい、早く連れ戻してくれ。',
           phrase: { id: 'marg_3', text: 'マルグリットは影の舟か教会を疑っている', power: 10, target: 'marguerite' },
         },
@@ -1883,17 +2273,20 @@ const CHAPTER2 = {
       questions: [
         {
           text: 'エレナと親しかったのか？',
+          approachType: 'trust',
           answer: 'はい…エレナさまはよく聖堂にいらして、私に話しかけてくださいました。悩みをよく打ち明けてくださって。',
           phrase: { id: 'ria_1', text: 'エレナは聖堂でリアに相談していた', power: 15, target: 'marguerite' },
         },
         {
           text: 'エレナはどんな悩みを話していた？',
+          approachType: 'direct',
           answer: '…それは、私の口からは。でも…エレナさまは、「自分の人生を自分で決めたい」とよく仰っていました。鳥が籠の外を見るような目で、遠くを見ながら。',
           phrase: { id: 'ria_2', text: 'エレナは自分の人生を自分で決めたかった', power: 25, target: 'marguerite', type: 'secret' },
           requiresFlag: 'marguerite_denial',
         },
         {
           text: '最後にエレナに会ったのはいつ？',
+          approachType: 'trust',
           answer: '三日前の夕方です。聖堂の裏庭で少し話して…別れ際に、「ありがとう、リア。元気でね」と仰いました。今思えば、お別れの言葉だったのかも。…裏口から旅装の人影が出るのを見たような気もします。',
           phrase: { id: 'ria_3', text: '聖堂の裏口から旅装の人影', power: 20, target: 'marguerite' },
         },
@@ -1907,16 +2300,19 @@ const CHAPTER2 = {
       questions: [
         {
           text: '三日前の夜、宿に変わった客は？',
+          approachType: 'trust',
           answer: 'ああ、いたね。フードを目深に被った若い女性。一人でね。珍しいなと思ったが、金はちゃんと払ってくれたし。',
           phrase: { id: 'dario_1', text: '三日前の夜、フード姿の若い女性が宿泊', power: 22, target: 'marguerite' },
         },
         {
           text: 'その女性はどこへ向かったかわかるか？',
+          approachType: 'direct',
           answer: '朝早くに出て行ったよ。出がけに馬車の手配を頼まれてね。行き先は…自由都市リベルタだったよ。一人で旅をするには遠い場所だが。',
           phrase: { id: 'dario_2', text: 'フードの女性は自由都市リベルタへ向かった', power: 18, target: 'marguerite' },
         },
         {
           text: 'マルグリットのことを知っているか？',
+          approachType: 'direct',
           answer: 'ギルド長さんかい。…まあ、ここだけの話、エレナさんの縁談を急いで進めてたって噂があったよ。相手は年の離れた商会頭だとか。あの娘さん、嫌がってたみたいだけどね。',
           phrase: { id: 'dario_3', text: 'マルグリットはエレナの縁談を進めていた', power: 28, target: 'marguerite', type: 'secret' },
         },
@@ -1930,16 +2326,19 @@ const CHAPTER2 = {
       questions: [
         {
           text: '影の舟はエレナの件に絡んでいるか？',
+          approachType: 'direct',
           answer: '絡んでないよ。確認したけど、身代金の要求も接触もない。誘拐じゃないね、間違いなく。組織が動いてたら俺の耳に入る。',
           phrase: { id: 'rat_1', text: '影の舟は関与していない（身代金要求なし）', power: 15, target: 'marguerite' },
         },
         {
           text: 'マルグリットとエレナの関係は？',
+          approachType: 'trust',
           answer: 'マルグリットさんはねえ…娘の意見を聞いたことがないんだよ。服も、友人も、縁談も、全部母親が決める。エレナちゃんが何を望むかは、問題じゃなかったんだ。',
           phrase: { id: 'rat_2', text: 'マルグリットはエレナの意見を聞いていない', power: 20, target: 'marguerite' },
         },
         {
           text: 'エレナはどうやって逃げた？',
+          approachType: 'direct',
           answer: '馬車代は聖堂の寄付金から出てるよ。司祭さんが融通してくれたんだろうね。エレナちゃんにゃ聖堂のシスターに友人がいたから。',
           phrase: { id: 'rat_3', text: '馬車代は聖堂の寄付金から出た', power: 22, target: 'marguerite' },
         },
@@ -1953,17 +2352,20 @@ const CHAPTER2 = {
       questions: [
         {
           text: '部屋に何か残っていたか？',
+          approachType: 'trust',
           answer: 'エレナさまの旅行鞄と、冬の着替えが三日分ほどなくなっています。…窓から出たにしては、持ち物が多すぎます。',
           phrase: { id: 'sofia_1', text: 'エレナの旅行鞄と着替えがなくなっていた', power: 30, target: 'marguerite', type: 'secret' },
         },
         {
           text: 'マルグリットはどんな様子だった？',
+          approachType: 'trust',
           answer: '…マルグリットさまは、私が旅行鞄のことを報告した時、取り乱されませんでした。普通なら「どこに持って行ったの」と聞くはずなのに。まるで…もう知っておられるようでした。',
           phrase: { id: 'sofia_2', text: 'マルグリットは旅行鞄の件を聞いても取り乱さなかった', power: 32, target: 'marguerite', type: 'secret' },
           setsFlag: 'marguerite_composure',
         },
         {
           text: 'マルグリットは最初に何をした？',
+          approachType: 'direct',
           answer: '翌朝、一番先にエレナさまの部屋に入ったのはマルグリットさまでした。私より先に。……それから少しして、「誘拐された」と騒ぎ始めたんです。',
           phrase: { id: 'sofia_3', text: 'マルグリットが一番にエレナの部屋を確認した', power: 15, target: 'marguerite' },
         },
@@ -1972,59 +2374,101 @@ const CHAPTER2 = {
   },
   negotiation: {
     target: 'marguerite',
-    maxGuard: 100,
-    maxTurns: 8,
+    maxGuard: 200,
+    maxTurns: 12,
     initialTrust: 100,
-    penaltyPerWrong: 20,
-    consecutiveMissFail: 2,
+    penaltyPerWrong: 15,
+    consecutiveMissFail: 3,
     turns: [
       {
         speech: '読み手殿、調査の成果は？ 娘を攫った犯人の目星はついたのか？',
-        hint: '「攫った」という前提を強く押し出している。',
+        hint: '人が最も守りたいものは、最初に語る言葉に現れることがある。',
         expression: 'nervous',
+        intuitionCorrect: 'deflecting',
+        intuitionHit: '（「犯人」という言葉を先に口にした。まだ外部犯の話に持っていきたいのだ）',
+        bestPhraseIds: ['marg_1', 'sofia_3'],
         choices: [
-          { text: '本当に誘拐犯を探している', correct: false },
-          { text: '捜査方向を誘拐に誘導しようとしている', correct: true },
-          { text: '不安から早く解決を求めている', correct: false },
-          { text: '外部の敵に責任を転嫁したい', correct: false },
+          { text: '早期解決を望む母親の切迫した心理が出ている', correct: false },
+          { text: '外部犯の存在を前提にすることで、内部の問題から目を逸らさせようとしている', correct: true },
+          { text: '調査への不満と焦りを正直に表現している', correct: false },
+          { text: '誰かへの疑念を言語化できずにいる状態だ', correct: false },
         ],
-        correctDamage: 20,
+        correctDamage: 5,
       },
       {
         speech: 'まさか…エレナが自分で出て行ったと？ 馬鹿な。あの子にそんな度胸があるはずがない。私が守ってきたのだから。',
-        hint: '「守る」と「支配」を混同している。管理が完璧だったと信じたい。',
+        hint: '「度胸がない」と言う者は、しばしば相手が持つ力を自分が封じてきたことを知っている。',
         expression: 'angry',
+        intuitionCorrect: 'lying',
+        intuitionHit: '（「守ってきた」という言葉に一瞬の淀みがあった）',
+        bestPhraseIds: ['ria_2', 'rat_2'],
         choices: [
-          { text: '本当に娘の行動力を信じていない', correct: false },
-          { text: '守ると支配を混同。管理が完璧だと信じたい', correct: true },
-          { text: '娘を信用していない正直な感情', correct: false },
-          { text: '犯人への怒りを娘に向けている', correct: false },
+          { text: '娘の性格を正確に把握したうえでの分析だ', correct: false },
+          { text: '娘の自立能力の欠如を本心から信じている', correct: false },
+          { text: '娘の意志を制御下に置いていた自覚があるからこそ「度胸がない」と言える', correct: true },
+          { text: '犯人への不信感が娘への不信感に転化している', correct: false },
         ],
-        correctDamage: 20,
+        correctDamage: 5,
       },
       {
         speech: '…縁談のことか。あれはエレナのためを思ってのことだ。ギルド長の娘にふさわしい相手を選んだ。あの子もいずれ分かる。',
-        hint: '世間体とギルドの利害を「娘のため」に置き換えている。',
+        hint: '「いずれ分かる」という言葉が示すのは、現在は理解されていないという認識だ。',
         expression: 'nervous',
+        intuitionCorrect: 'hiding_emotion',
+        intuitionHit: '（「いずれ分かる」と言いながら、視線が落ちた）',
+        bestPhraseIds: ['dario_3', 'marg_2'],
         choices: [
-          { text: '本当に娘のことを思っている', correct: false },
-          { text: '世間体とギルドの利害を娘のために置き換えている', correct: true },
-          { text: '縁談に反省はない正直な答え', correct: false },
-          { text: '娘が戻れば丸く収まると思っている', correct: false },
+          { text: '長期的な視野を持つ母親の愛情表現だ', correct: false },
+          { text: '娘の意見を尊重しながらも最善策を選んだ合理的判断だ', correct: false },
+          { text: '「いずれ分かる」は、今は娘が反対しているという事実の暗黙の承認だ', correct: true },
+          { text: '縁談の相手への信頼を述べている', correct: false },
         ],
-        correctDamage: 25,
+        correctDamage: 5,
+      },
+      {
+        speech: '…修道女が何を知っているというのだ。あの子は若い。世間を知らないシスターの言葉に影響された。それだけのことだ。',
+        hint: '情報源の否定は、その情報源が痛いところをついた時に起きやすい。',
+        expression: 'angry',
+        intuitionCorrect: 'deflecting',
+        intuitionHit: '（リアではなく、リアの「影響力」を攻撃している）',
+        bestPhraseIds: ['ria_1', 'rat_2'],
+        choices: [
+          { text: '修道女への正当な不信感を表明している', correct: false },
+          { text: 'リアの証言内容ではなく、リアという人物の信頼性を攻撃している', correct: true },
+          { text: '娘が悪い影響を受けたと信じる母の憂慮だ', correct: false },
+          { text: 'シスターの世間知らずを指摘する適切な批判だ', correct: false },
+        ],
+        correctDamage: 5,
+      },
+      {
+        speech: '旅行鞄がなくなっていた？ …それは、侍女が片づけたのかもしれない。いなくなった翌朝、私は部屋を確認した。すぐに捜索の手配をするために。',
+        hint: '必要以上の詳細は、事前に用意した説明の存在を示すことがある。',
+        expression: 'nervous',
+        intuitionCorrect: 'lying',
+        intuitionHit: '（「侍女が片づけた」という言葉が出た瞬間、目が泳いだ）',
+        bestPhraseIds: ['sofia_1', 'sofia_2'],
+        choices: [
+          { text: '母親として当然の行動を説明している', correct: false },
+          { text: '「翌朝すぐに」という細部に、何かを確認しに行った目的が隠れている', correct: true },
+          { text: '捜索手順の正当性を証明しようとしている', correct: false },
+          { text: '侍女への疑念を間接的に示している', correct: false },
+        ],
+        correctDamage: 5,
       },
       {
         speech: '…手紙は、あった。エレナが置いていった。「お母さま、ごめんなさい。でも私は鳥籠の中では歌えません」…と。だが、それでも私は…。',
-        hint: '全てを知っていた。誘拐と偽ることで非を認めず娘を連れ戻したかった。',
+        hint: '「それでも」という接続詞の後に続く言葉が、最もその人の本質を語ることがある。',
         expression: 'sad',
+        intuitionCorrect: 'truthful',
+        intuitionHit: '（初めて、嘘のない声が聞こえた）',
+        bestPhraseIds: ['dario_1', 'ria_3'],
         choices: [
-          { text: '手紙を読んで初めて気づいた', correct: false },
-          { text: '手紙の意味が理解できなかった', correct: false },
-          { text: '全てを知っていた。誘拐と偽ることで非を認めず娘を連れ戻したかった', correct: true },
-          { text: '娘への怒りを隠している', correct: false },
+          { text: '手紙の意味を今初めて理解しようとしている', correct: false },
+          { text: '手紙を読んでいながら「誘拐」と騒いだ。知りながら認められなかった矛盾の告白だ', correct: true },
+          { text: '娘の手紙の真意に混乱している', correct: false },
+          { text: '娘への怒りを抑えながら語っている', correct: false },
         ],
-        correctDamage: 35,
+        correctDamage: 5,
       },
     ],
     confession: '…そうだ。私は…知っていた。エレナが自分で出て行ったことも。手紙を読んだ時、分かっていた。でも…認められなかった。私のやってきたことが間違いだったと認めれば、私は…何のためにここまで来たのか分からなくなる。ギルドを守るために、人脈のために、娘を道具のように…そうじゃない、そうじゃないはずだったんだ。（長い沈黙）…読み手殿。あの子は、無事なのか？ それだけでいい。無事だと…教えてくれ。',
@@ -2051,17 +2495,17 @@ const CHAPTER2 = {
 //  CHAPTER 3 DATA — 「偽りの同盟」
 // ===================================================================
 const CHAPTER3 = {
-  ap: 5,
+  ap: 3,
   title: '偽りの同盟',
   locationName: 'ポルタ・ヴェリタス（領主府区）',
   mission: '領主ヴァレンティンとマルグリットの秘密協定を暴け。交渉は二連戦だ。',
   introText: '領主ヴァレンティンと商人ギルドは表向き友好関係にある。だが、その裏に密輸組織「影の舟」との癒着が浮かぶ。同盟の真の姿を暴くため、二人との交渉に臨め。',
   locations: [
-    { id: 'lords_hall', name: '領主の間', icon: '👑', npcId: 'valentin', desc: '領主ヴァレンティンが謁見中' },
-    { id: 'guild_archive', name: 'ギルド書庫', icon: '📚', npcId: 'marguerite_ch3', desc: 'マルグリットが書類を確認中' },
-    { id: 'barracks', name: '衛兵詰所', icon: '⚔️', npcId: 'leon', desc: '衛兵隊長レオンがいる' },
-    { id: 'market', name: '市場の商館', icon: '💰', npcId: 'pietro', desc: '商人ピエトロが取引中' },
-    { id: 'fog_contact', name: '霧の接触場所', icon: '🌫️', npcId: 'fog_messenger', desc: '霧の密使が現れるかもしれない' },
+    { id: 'lords_hall', name: '領主の間', icon: '👑', npcId: 'valentin', desc: '領主ヴァレンティンが謁見中', scoutText: 'ヴァレンティンは書類を読みながら、何か考えこんでいる。公式な立場の割に、どこか防御的な雰囲気がある。' },
+    { id: 'guild_archive', name: 'ギルド書庫', icon: '📚', npcId: 'marguerite_ch3', desc: 'マルグリットが書類を確認中', scoutText: 'マルグリットは書類を急いで整理している。何かを確認しているのか、それとも隠しているのか判断できない。' },
+    { id: 'barracks', name: '衛兵詰所', icon: '⚔️', npcId: 'leon', desc: '衛兵隊長レオンがいる', scoutText: 'レオンは部下の訓練を見守りながら、こちらに気づいて少し表情が緩んだ。話しかけてほしいと思っているように見える。' },
+    { id: 'market', name: '市場の商館', icon: '💰', npcId: 'pietro', desc: '商人ピエトロが取引中', scoutText: 'ピエトロは取引の合間に、港の方角を気にしている。何か知っているが、誰かに聞かれるのを待っているような様子だ。' },
+    { id: 'fog_contact', name: '霧の接触場所', icon: '🌫️', npcId: 'fog_messenger', desc: '霧の密使が現れるかもしれない', scoutText: '薄暗い場所に人影がある。普通の人間ではなさそうだ。近づけば話ができるかもしれないが、危険な相手かもしれない。' },
   ],
   npcs: {
     valentin: {
@@ -2072,17 +2516,20 @@ const CHAPTER3 = {
       questions: [
         {
           text: '影の舟について何か知っているか？',
+          approachType: 'direct',
           answer: '…知らん。密輸組織など、私には関係ない。衛兵が取り締まっているはずだ。',
           phrase: { id: 'val_1', text: 'ヴァレンティンは影の舟について「知らない」と言い切った', power: 15, target: 'valentin' },
         },
         {
           text: '夜間の港の監視体制はどうなっている？',
+          approachType: 'trust',
           answer: 'それは衛兵隊長レオンが管理している。私が直接関与する必要はない。…適切に行われているはずだ。',
           phrase: { id: 'val_2', text: 'ヴァレンティンは夜間港の監視を「適切に行われているはず」と他人事のように語った', power: 20, target: 'valentin' },
           setsFlag: 'valentin_distancing',
         },
         {
           text: '商人ギルドとはどんな関係か？',
+          approachType: 'trust',
           answer: '互いに協力し合う関係だ。ギルドは税を納め、領主府は秩序を提供する。…ただそれだけのことだ。',
           phrase: { id: 'val_3', text: 'ヴァレンティンはギルドとの関係を「ただそれだけ」と過度に単純化した', power: 18, target: 'valentin' },
         },
@@ -2096,17 +2543,20 @@ const CHAPTER3 = {
       questions: [
         {
           text: 'ギルドと領主府の取り決めは？',
+          approachType: 'trust',
           answer: '…公式な協定は公開されている。税率、通関手続き、それだけだ。それ以上のことは…言えない。',
           phrase: { id: 'marg_ch3_1', text: 'マルグリットは「それ以上のことは言えない」と口を噤んだ', power: 22, target: 'marguerite_ch3' },
         },
         {
           text: '裏帳簿の存在を知っているか？',
+          approachType: 'direct',
           answer: '…裏帳簿？ 何の話だ。そんなものは存在しない。',
           phrase: { id: 'marg_ch3_2', text: 'マルグリットは裏帳簿の存在を強く否定した', power: 28, target: 'marguerite_ch3' },
           setsFlag: 'marguerite_ledger_denial',
         },
         {
           text: '港の密輸ルートを誰が管理している？',
+          approachType: 'direct',
           answer: '…それを私に聞くのか。…私は知らない。ただ、誰かが管理しているとすれば、それは長年この港に関わってきた者だろう。',
           phrase: { id: 'marg_ch3_3', text: 'マルグリットは密輸管理者を「長年この港に関わってきた者」とほのめかした', power: 25, target: 'marguerite_ch3' },
         },
@@ -2120,11 +2570,13 @@ const CHAPTER3 = {
       questions: [
         {
           text: '夜間の港の巡回は誰が担当している？',
+          approachType: 'trust',
           answer: '通常は担当衛兵を割り当てている。だが…特定の夜は「巡回不要」という命令が上から来ることがある。理由は聞かされない。',
           phrase: { id: 'leon_1', text: '特定の夜に「巡回不要」命令が領主府から来る', power: 35, target: 'valentin' },
         },
         {
           text: 'ヴァレンティンの様子はどうだ？',
+          approachType: 'direct',
           answer: '…最近、月に一度、深夜に領主邸に商船の者が訪ねてくる。それだけは言える。私は見なかったことにしているが。',
           phrase: { id: 'leon_2', text: '月に一度、深夜に商船の者が領主邸を訪れる', power: 30, target: 'valentin', type: 'secret' },
         },
@@ -2138,11 +2590,13 @@ const CHAPTER3 = {
       questions: [
         {
           text: '港の荷物管理に不審な点はあるか？',
+          approachType: 'trust',
           answer: '特定の船の荷物が、通関記録とずれることがある。書類は正式なものだが…数が合わない。誰かが調整している。',
           phrase: { id: 'pietro_1', text: '通関記録と実際の荷物の数が合わない', power: 28, target: 'valentin' },
         },
         {
           text: 'ギルド長マルグリットの動きは？',
+          approachType: 'direct',
           answer: 'マルグリットさんは最近、ギルドの帳簿に新しい書式を導入した。旧来の帳簿は廃棄されている。…何かを隠したいのかもしれない。',
           phrase: { id: 'pietro_2', text: 'マルグリットは旧来の帳簿を廃棄した', power: 32, target: 'marguerite_ch3', type: 'secret' },
           requiresFlag: 'marguerite_ledger_denial',
@@ -2157,11 +2611,13 @@ const CHAPTER3 = {
       questions: [
         {
           text: '「霧」とは何者だ？',
+          approachType: 'trust',
           answer: '…我々は便宜上そう呼ばれている。組織というより、利害の一致した者たちの緩やかな繋がりだ。領主も、ギルドも、我々なしには港が回らない。',
           phrase: { id: 'fog_1', text: '「霧」は領主とギルドの双方と繋がっている', power: 40, target: 'valentin' },
         },
         {
           text: '頭目「霧」とは会えるか？',
+          approachType: 'direct',
           answer: '…それは難しい。だが、あなたが真実を求めているなら、地下の帳簿番を探せ。全てを知っている老人がいる。',
           phrase: { id: 'fog_2', text: '全てを知る帳簿番の老人が地下にいる', power: 35, target: 'valentin', type: 'secret' },
           setsFlag: 'found_frederico_hint',
@@ -2177,59 +2633,101 @@ const CHAPTER3 = {
         targetName: 'ヴァレンティン',
         targetEmoji: '👑',
         targetDesc: '領主。表向きは秩序の守護者だが、密輸組織への黙認料で蓄財している。',
-        maxGuard: 90,
-        maxTurns: 8,
+        maxGuard: 180,
+        maxTurns: 12,
         initialTrust: 100,
-        penaltyPerWrong: 20,
-        consecutiveMissFail: 2,
+        penaltyPerWrong: 15,
+        consecutiveMissFail: 3,
         turns: [
           {
             speech: '何が言いたい？ 私は正当な課税と秩序維持を行っているだけだ。',
-            hint: '「正当な」を強調しすぎている。',
+            hint: '弁明は問われた後に来る。問われる前に弁明する者は、問われることを予期していた。',
             expression: 'nervous',
+            intuitionCorrect: 'deflecting',
+            intuitionHit: '（何も問われていないのに、弁明から始めた）',
+            bestPhraseIds: ['val_3', 'leon_1'],
             choices: [
-              { text: '本当に正当だと思っている', correct: false },
-              { text: '正当性を強調して疑惑を先手で否定している', correct: true },
-              { text: '課税の正当性を誇示したい', correct: false },
-              { text: '読み手への威嚇', correct: false },
+              { text: '自分の職務の正当性を誇りをもって述べている', correct: false },
+              { text: '読み手の意図を見抜き、先手で批判を封じようとしている', correct: true },
+              { text: '具体的な疑惑を述べていないまま否定している意味がない', correct: false },
+              { text: '官僚的な責任回避の典型的な言い回しだ', correct: false },
             ],
-            correctDamage: 22,
+            correctDamage: 5,
           },
           {
             speech: '密輸？ そんなものは私の管轄外だ。衛兵がきちんと処理している。証拠があるというなら見せてもらおうか。',
-            hint: '「証拠があるなら」と条件をつけた。証拠を恐れている。',
+            hint: '責任を他者に委ねることと、証拠の開示を求めることは、どちらも情報の非対称を守るための手段になりうる。',
             expression: 'angry',
+            intuitionCorrect: 'lying',
+            intuitionHit: '（「きちんと処理している」と言いながら、一瞬唇が緊張した）',
+            bestPhraseIds: ['leon_1', 'leon_2'],
             choices: [
-              { text: '本当に証拠を求めている', correct: false },
-              { text: '証拠を恐れているが、ないと見込んで強気に出ている', correct: true },
-              { text: '法的手続きを求めている', correct: false },
-              { text: '時間を稼いで証拠を隠そうとしている', correct: false },
+              { text: '法的に適切な対応を要求している正当な発言だ', correct: false },
+              { text: '管轄を分散させることで、自分への追及を分断させようとしている', correct: false },
+              { text: '「衛兵がきちんと処理している」という事実確認は、処理内容を知っている者にしか言えない', correct: true },
+              { text: '証拠の存在そのものを否定しようとしている', correct: false },
             ],
-            correctDamage: 25,
+            correctDamage: 5,
           },
           {
             speech: '…巡回の免除？ それは港の混乱を避けるための措置だ。特定の船が入る時は慎重に対応する必要がある。それだけだ。',
-            hint: '「慎重な対応」が口からこぼれた。密輸船を認識していた。',
+            hint: '説明が詳細になるほど、その説明が事前に準備されたものである可能性が高くなる。',
             expression: 'nervous',
+            intuitionCorrect: 'hiding_emotion',
+            intuitionHit: '（「特定の船」という言葉が出た時、声が僅かに上ずった）',
+            bestPhraseIds: ['fog_1', 'val_2'],
             choices: [
-              { text: '本当に港の安全管理の話をしている', correct: false },
-              { text: '密輸船の入港を知りながら衛兵を意図的に外した', correct: true },
-              { text: 'セキュリティ上の理由で詳細を隠している', correct: false },
-              { text: '巡回免除は一般的な手続きだと言いたい', correct: false },
+              { text: '港湾管理の専門的知識に基づく適切な判断だ', correct: false },
+              { text: '「特定の船」という言葉が、その船を識別していたことを示している', correct: true },
+              { text: '混乱回避という目的は合理的であり疑う余地はない', correct: false },
+              { text: '衛兵管理権限の範囲内で動いていただけだ', correct: false },
             ],
-            correctDamage: 30,
+            correctDamage: 5,
+          },
+          {
+            speech: '…レオンが証言したか。あの男は何も知らない。命令に従うだけだ。指示の背景など理解していない。',
+            hint: '証言者の無知を強調することで、証言の的確さを無効化しようとする手法に注意。',
+            expression: 'angry',
+            intuitionCorrect: 'deflecting',
+            intuitionHit: '（レオンではなく、レオンの「理解力」を攻撃した）',
+            bestPhraseIds: ['pietro_1', 'leon_2'],
+            choices: [
+              { text: '部下の権限の限界を正確に説明している', correct: false },
+              { text: 'レオンの証言内容には反論せず、レオン自身の理解力を攻撃している', correct: true },
+              { text: 'レオンへの不満が出た正直な感情だ', correct: false },
+              { text: '指揮系統の説明として適切な発言だ', correct: false },
+            ],
+            correctDamage: 5,
+          },
+          {
+            speech: '「霧」など知らん。密輸組織の名前を私が知る必要はない。そういった情報は衛兵が管理すべきだ。',
+            hint: '知らないことと、知らないふりをすることは、言葉の上では区別できない。だが「べきだ」という当為が本音を示す。',
+            expression: 'nervous',
+            intuitionCorrect: 'lying',
+            intuitionHit: '（「知らん」と言いながら、「霧」という言葉に反応して一瞬止まった）',
+            bestPhraseIds: ['fog_2', 'val_1'],
+            choices: [
+              { text: '領主が密輸組織の名前を知らないのは当然のことだ', correct: false },
+              { text: '「衛兵が管理すべき」という言葉は、現在そうなっていないことの認識を含んでいる', correct: true },
+              { text: '組織名の否定は、組織の存在自体の否定ではない', correct: false },
+              { text: '職責の範囲を明確にしようとしている合理的な発言だ', correct: false },
+            ],
+            correctDamage: 13,
           },
           {
             speech: '…わかった。もう十分だろう。私も…この立場に来るまで、汚れた手も使った。だが、この町は今まで通りに回っている。それが全てではないのか。',
-            hint: '開き直り。秩序維持という自己正当化に縋っている。',
+            hint: '「それが全てではないのか」という問いかけは、相手に同意を求めている。同意がなければ崩れる論理だ。',
             expression: 'sad',
+            intuitionCorrect: 'truthful',
+            intuitionHit: '（初めて、嘘のない声が聞こえた。だが、これは告白ではなく正当化だ）',
+            bestPhraseIds: ['fog_1', 'ch3_synth_1'],
             choices: [
-              { text: '本当に反省している', correct: false },
-              { text: '罪を認めたうえで秩序という大義で正当化しようとしている', correct: true },
-              { text: '疲れて諦めた', correct: false },
-              { text: '交渉を終わらせたい', correct: false },
+              { text: '現実主義者として実利を優先した判断を告白している', correct: false },
+              { text: '罪を認めながらも、結果の良さで行為を正当化しようとしている', correct: true },
+              { text: '疲れ果てて防衛をやめた投降の言葉だ', correct: false },
+              { text: '読み手に共犯意識を持たせようとしている', correct: false },
             ],
-            correctDamage: 13,
+            correctDamage: 5,
           },
         ],
         confession: '…そうだ。黙認料を受け取っていた。「霧」が港に入る夜、衛兵を引かせた。月に一度の小遣い稼ぎのつもりだった。だが気づけば十年が経っていた。この町が豊かなのは、密輸のおかげでもある。それが嘘だとは言えない。……だがマルグリットは違う。あの女は黙認料では満足しなかった。帳簿を手に入れ、ルートを乗っ取ろうとしている。私は道具にされていたんだ。',
@@ -2239,59 +2737,83 @@ const CHAPTER3 = {
         targetName: 'マルグリット',
         targetEmoji: '👩',
         targetDesc: 'ギルド長。ヴァレンティンの告白を聞いた今、彼女の真意を問い質す時だ。',
-        maxGuard: 95,
-        maxTurns: 8,
+        maxGuard: 200,
+        maxTurns: 12,
         initialTrust: 100,
-        penaltyPerWrong: 20,
-        consecutiveMissFail: 2,
+        penaltyPerWrong: 15,
+        consecutiveMissFail: 3,
         turns: [
           {
             speech: '…ヴァレンティンが全部話したと？ あの意気地なし。まあいい、どうせあの男の証言など、大した価値はない。',
-            hint: '相手の証言の価値を下げようとしている。内容を否定せず、信頼性を攻撃した。',
+            hint: '批判する者は、批判の対象が自分と同じ行動を取ったことを知っている。',
             expression: 'angry',
             choices: [
-              { text: 'ヴァレンティンへの怒りを正直に出している', correct: false },
-              { text: '内容を否定せず信頼性だけを攻撃。事実は認めている', correct: true },
-              { text: '証言を軽視して余裕を見せている', correct: false },
-              { text: '読み手を試している', correct: false },
+              { text: 'ヴァレンティンへの長年の不満が爆発した正直な感情だ', correct: false },
+              { text: '証言内容の正確さではなく証言者の人格を攻撃している。内容の真否は問題にしていない', correct: true },
+              { text: '動揺を隠すために強がっている', correct: false },
+              { text: '共犯関係をヴァレンティン側に押しつけようとしている', correct: false },
             ],
-            correctDamage: 22,
+            correctDamage: 13,
           },
           {
             speech: '帳簿の廃棄？ 古い書式は業務効率のために刷新した。それだけだ。違法なことは何もない。',
-            hint: '「違法なことは何もない」と先手を打った。法的問題を意識している。',
+            hint: '人は疑われていない点については弁明しない。弁明の存在が疑惑の存在を示す。',
             expression: 'nervous',
             choices: [
-              { text: '本当に業務改善のためだった', correct: false },
-              { text: '法的問題を意識して先手を打った。廃棄の理由が証拠隠滅', correct: true },
-              { text: '説明責任を果たしている', correct: false },
-              { text: '読み手の勘繰りをかわしている', correct: false },
+              { text: '業務改善の経緯を正直に説明している', correct: false },
+              { text: '「違法なことは何もない」という法的評価は、行為の存在自体を認めた上での弁明だ', correct: true },
+              { text: '廃棄の事実を隠しながら別の説明をしている', correct: false },
+              { text: '旧帳簿の廃棄は一般的な業務慣行で問題ない', correct: false },
             ],
-            correctDamage: 25,
+            correctDamage: 14,
           },
           {
             speech: 'ルートを「乗っ取る」などという言い方は失礼だ。私は商人として、より効率的な流通を提案しただけだ。',
-            hint: '「乗っ取り」という表現に反応した。提案の中身ではなく言葉に反発している。',
+            hint: '言葉の選択への強い反発は、その言葉が核心に触れていることを示す場合がある。',
             expression: 'angry',
             choices: [
-              { text: '本当に誤解を解こうとしている', correct: false },
-              { text: '実質的な行動を「提案」と言い換えた。行動自体は認めている', correct: true },
-              { text: '商人として当然のことをしているだけ', correct: false },
-              { text: '読み手に敵意を示している', correct: false },
+              { text: '誤解を解こうとする正当な訂正だ', correct: false },
+              { text: '「乗っ取り」という言葉だけを問題にして、行動自体の是非を回避している', correct: true },
+              { text: '商人として当然の流通改善の提案だった', correct: false },
+              { text: '読み手への敵意から言葉遣いを指摘している', correct: false },
             ],
-            correctDamage: 25,
+            correctDamage: 14,
+          },
+          {
+            speech: '…ピエトロまで。あの男は私に世話になっておきながら。人の恩を忘れるとは。',
+            hint: '恩と義務の混同は、支配関係の存在を示すことがある。',
+            expression: 'angry',
+            choices: [
+              { text: 'ピエトロへの배信感を正直に表現している', correct: false },
+              { text: '「恩を忘れた」という言葉は、証言を封じる手段として恩を使おうとした過去を示している', correct: true },
+              { text: '情報提供者への怒りは誰でも持つ自然な感情だ', correct: false },
+              { text: 'ピエトロの証言の信憑性に疑問を呈している', correct: false },
+            ],
+            correctDamage: 13,
+          },
+          {
+            speech: '…私が全部仕切らなければ、この港は機能しない。ヴァレンティンに何ができる？ あの男は形だけの領主だ。',
+            hint: '他者の無能の強調は、自分の不可欠性を証明しようとする動機から来ることが多い。',
+            expression: 'nervous',
+            choices: [
+              { text: 'ヴァレンティンへの正当な評価を述べている', correct: false },
+              { text: 'ギルドの権力集中を「必要性」として正当化しようとしている', correct: true },
+              { text: '港の実態を熟知した者の現実的な分析だ', correct: false },
+              { text: '読み手に自分の有能さを示したい虚栄心だ', correct: false },
+            ],
+            correctDamage: 13,
           },
           {
             speech: '…わかった、わかった。私は…この港で生き残るために、やれることは全てやった。エレナを失ってから、もう何も怖くなくなった。全部話す。何でも。',
-            hint: 'エレナの名前が出た。娘を失った痛みが、ここへ来るまでの全ての行動の根源にある。',
+            hint: 'エレナの名前が出た。最も傷ついた場所を語る者は、その傷が全ての行動の源泉だと知っている。',
             expression: 'sad',
             choices: [
-              { text: '諦めて投降した', correct: false },
-              { text: '娘を失った痛みが全ての行動の底にある。エレナのために積み上げた地位を守ろうとしていた', correct: true },
-              { text: '本当に何もかもを話す気になった', correct: false },
-              { text: '最後の駆け引きをしている', correct: false },
+              { text: '戦略的に感情を使って同情を引こうとしている', correct: false },
+              { text: '疲れ果てて全てを諦めた真の投降だ', correct: false },
+              { text: '娘を失ったことがこれほどまでの行動の根底にあった。その喪失感が初めて言語化された', correct: true },
+              { text: '読み手への最後の駆け引きをしている', correct: false },
             ],
-            correctDamage: 23,
+            correctDamage: 13,
           },
         ],
         confession: '…そうよ。全部。ヴァレンティンが黙認料だけで満足しているうちに、私は「霧」のルートを完全に掌握しようとした。帳簿を書き換え、中間業者を排除し、ギルドが直接管理する体制を作ろうとした。なぜ？ エレナが出て行って、私に残ったのはギルドだけだったから。……ねえ、読み手殿。娘は今、幸せなのかしら。あの子が幸せなら…私の全てが無駄だったとしても、それでいい気がして。',
@@ -2320,17 +2842,17 @@ const CHAPTER3 = {
 //  CHAPTER 4 DATA — 「地下の帳簿」
 // ===================================================================
 const CHAPTER4 = {
-  ap: 5,
+  ap: 3,
   title: '地下の帳簿',
   locationName: '旧市街地下街',
   mission: '帳簿番フェデリコを見つけ出し、40年分の不正記録の全貌を暴け。',
   introText: '旧市街の地下に、かつての帳簿番フェデリコ老人が隠れている。40年にわたり、この町の全勢力の不正を記録してきた男。彼の口を開かせることができれば、真実の全てが明らかになる。',
   locations: [
-    { id: 'underground_tavern', name: '地下酒場', icon: '🕯️', npcId: 'frederico', desc: 'フェデリコ老人が潜伏中' },
-    { id: 'old_church', name: '廃教会', icon: '🏚️', npcId: 'orlando_ch4', desc: '司祭オルランドが避難している' },
-    { id: 'safe_house', name: '隠れ家', icon: '🔐', npcId: 'teresa_ch4', desc: 'テレサが情報を持っている' },
-    { id: 'shadow_wharf', name: '影の桟橋', icon: '⛵', npcId: 'fog_head_hint', desc: '「霧」本人の手がかりがある' },
-    { id: 'document_vault', name: '文書保管室', icon: '📜', npcId: 'nina', desc: '文書管理官ニーナが守っている' },
+    { id: 'underground_tavern', name: '地下酒場', icon: '🕯️', npcId: 'frederico', desc: 'フェデリコ老人が潜伏中', scoutText: 'ろうそくの明かりだけが灯る薄暗い酒場。奥の席に老人がいる。長年、誰かを待ち続けているような目をしている。' },
+    { id: 'old_church', name: '廃教会', icon: '🏚️', npcId: 'orlando_ch4', desc: '司祭オルランドが避難している', scoutText: 'かつての聖堂の面影を残す廃墟。オルランドはひざまずいて祈っている。その背中には恐怖と使命感が混在している。' },
+    { id: 'safe_house', name: '隠れ家', icon: '🔐', npcId: 'teresa_ch4', desc: 'テレサが情報を持っている', scoutText: 'テレサは窓から外をうかがいながら何かを待っている。港で長年商売してきた彼女は、この地下街でも情報の中心にいるようだ。' },
+    { id: 'shadow_wharf', name: '影の桟橋', icon: '⛵', npcId: 'fog_head_hint', desc: '「霧」本人の手がかりがある', scoutText: '霧が立ち込める桟橋。番人らしき人物がこちらを見ている。話しかければ何かを教えてくれるかもしれない。' },
+    { id: 'document_vault', name: '文書保管室', icon: '📜', npcId: 'nina', desc: '文書管理官ニーナが守っている', scoutText: 'ニーナは棚の書類を確認しながら、こちらを待っていたかのように顔を上げた。重要な記録がここに眠っているようだ。' },
   ],
   npcs: {
     frederico: {
@@ -2439,71 +2961,83 @@ const CHAPTER4 = {
     targetName: 'フェデリコ',
     targetEmoji: '🕯️',
     targetDesc: '40年間、全勢力の不正を記録してきた帳簿番の老人。最も手強い交渉相手。',
-    maxGuard: 120,
-    maxTurns: 10,
+    maxGuard: 250,
+    maxTurns: 12,
     initialTrust: 100,
-    penaltyPerWrong: 15,
+    penaltyPerWrong: 12,
     consecutiveMissFail: 3,
     turns: [
       {
         speech: '読み手よ。あなたは何者だ？ 誰かに頼まれてここへ来たのか？',
-        hint: '信頼を測っている。依頼者がいるかどうかを確認している。',
+        hint: '老人は長年、人間を見続けてきた。質問の形式より、質問が生まれた場所を見ている。',
         expression: 'nervous',
         choices: [
-          { text: '誰かの依頼で来た', correct: false },
-          { text: '自分の意志で真実を求めている', correct: true },
-          { text: '領主に頼まれた', correct: false },
-          { text: 'ギルドの命令で来た', correct: false },
+          { text: '依頼を受けた調査者として誠実に答えるべきだ', correct: false },
+          { text: '「誰かに」という問いは、動機の純粋さを測ろうとしている', correct: true },
+          { text: '老人は単に身元確認をしている', correct: false },
+          { text: '敵対者でないことを証明する場面だ', correct: false },
         ],
-        correctDamage: 22,
+        correctDamage: 14,
       },
       {
         speech: '帳簿を見せたとして、何が変わる？ この町の人間は全員が罪を持っている。誰かが裁かれれば、必ず誰かが得をする。',
-        hint: '変化を恐れている。均衡の破壊が何をもたらすかを誰より知っている。',
+        hint: '「何が変わる」という問いは答えを求めているのではなく、問いかける者自身の恐れを映している。',
         expression: 'nervous',
         choices: [
-          { text: '変化は必要ないと言っている', correct: false },
-          { text: '変化の結果を誰より恐れている。だから動けずにいた', correct: true },
-          { text: '全員有罪なので真実は無意味だと言っている', correct: false },
-          { text: '読み手に投げかけている哲学的問い', correct: false },
+          { text: '変化の無意味さを主張している冷静な現実主義だ', correct: false },
+          { text: '「誰かが得をする」という言葉が、変化後の世界を具体的に想像していることを示す', correct: false },
+          { text: '変化を恐れているが、変化を望んでもいる。その葛藤が「何が変わる」という問いに現れている', correct: true },
+          { text: '読み手への哲学的な試練を与えている', correct: false },
         ],
-        correctDamage: 25,
+        correctDamage: 15,
       },
       {
         speech: '私は誰の側でもない。ただ記録するだけだった。記録を残すことが…罪になるとは思わなかった。',
-        hint: '記録行為を「無実」と信じているが、均衡を意図的に維持したのは彼自身だ。',
+        hint: '行為と意図は別物だ。行為の結果を知りながら行為を継続することは、意図とどう違うか。',
         expression: 'sad',
         choices: [
-          { text: '本当に無実の傍観者だった', correct: false },
-          { text: '記録だけでなく、均衡を意図的に維持することで全ての罪に加担した', correct: true },
-          { text: '記録者の義務を果たしていた', correct: false },
-          { text: '後悔を示している正直な独白', correct: false },
+          { text: '記録者という役割に徹した誠実な職業人だった', correct: false },
+          { text: '無実の傍観者だったが、知らずに加担してしまった被害者でもある', correct: false },
+          { text: '記録が均衡を維持する手段になっていると知りながら記録を続けた。知ることは選択だった', correct: true },
+          { text: '自分の罪の重さをまだ理解できていない状態だ', correct: false },
         ],
-        correctDamage: 28,
+        correctDamage: 16,
       },
       {
         speech: 'ルカが…真実を望んでいるだと？ あの子が。あの子の父親を…私は見殺しにした。記録していたのに、何もしなかった。',
-        hint: 'ルカへの罪悪感。この発言が核心に近い。',
+        hint: '罪悪感は告白の入口でもあり、告白の障壁でもある。',
         expression: 'sad',
         choices: [
-          { text: 'ルカへの同情を示している', correct: false },
-          { text: '見殺しにしたという罪悪感が、全てを話せない根本の理由の一つ', correct: true },
-          { text: 'ルカの父の死に責任はないと言っている', correct: false },
-          { text: '過去の後悔を吐露しているだけ', correct: false },
+          { text: 'ルカへの同情と償いの気持ちが表れている', correct: false },
+          { text: '父の死の記録を持ちながら沈黙したことが、ルカへの最大の罪だと感じている', correct: true },
+          { text: 'ルカの父の死に実質的な責任はないという告白だ', correct: false },
+          { text: '後悔を吐露することで罪悪感を軽くしようとしている', correct: false },
         ],
-        correctDamage: 25,
+        correctDamage: 15,
+      },
+      {
+        speech: '…テレサは余計なことを言った。あの女は昔から、人の秘密を暴くことを正義だと思っている。それが時に何を壊すか、わかっていない。',
+        hint: '特定の人物への批判は、その人物の証言が核心に近かったことを示すことがある。',
+        expression: 'nervous',
+        choices: [
+          { text: 'テレサへの純粋な感情的反発だ', correct: false },
+          { text: 'テレサの「秘密を暴くことの正義」への批判は、自分の沈黙への自己弁護でもある', correct: true },
+          { text: 'テレサの証言の信憑性に疑問を呈している', correct: false },
+          { text: 'テレサを守ろうとしている', correct: false },
+        ],
+        correctDamage: 15,
       },
       {
         speech: '…「結果を恐れない者」か。あの子（ニーナ）はそれをあなたに言ったか。……では聞こう。あなたは、真実を知った後にどうするつもりだ？',
-        hint: '最後の問い。答え方で帳簿を渡すかどうかが決まる。',
+        hint: 'フェデリコが40年間待ち続けた問いがある。その答えは、一つの言葉では収まらない重さを持つ。',
         expression: 'open',
         choices: [
-          { text: '誰かを裁く', correct: false },
-          { text: '真実を公表する', correct: false },
-          { text: '関係者全員に選択を委ねる', correct: true },
-          { text: '秘密にして自分だけが知る', correct: false },
+          { text: '証拠として法に委ねる', correct: false },
+          { text: '全てを公表して断罪する', correct: false },
+          { text: '真実をどう扱うかを、当事者それぞれに委ねる', correct: true },
+          { text: '自分だけが知る証拠として温存する', correct: false },
         ],
-        correctDamage: 20,
+        correctDamage: 15,
       },
     ],
     confession: '…そうか。「選択を委ねる」か。それが…唯一、私が受け入れられる答えだ。（フェデリコは長い沈黙の後、厚い革表紙の帳簿を取り出した）これが全てだ。40年分。領主の黙認料、ギルドの二重帳簿、霧の密輸記録、そして…ルカの父が殺された夜の記録。誰も知らない真実が、ここにある。読み手よ。あなたの「選択」の意味を、どうか覚えていてくれ。これを使う時も、使わない時も、全ての責任はあなたにある。',
@@ -2675,10 +3209,10 @@ const CHAPTER5 = {
     targetName: '最終交渉',
     targetEmoji: '🏛️',
     targetDesc: '4勢力代表が一堂に会した。ターンごとに発言者が変わる。全てのフレーズが有効。',
-    maxGuard: 150,
-    maxTurns: 10,
+    maxGuard: 300,
+    maxTurns: 14,
     initialTrust: 100,
-    penaltyPerWrong: 15,
+    penaltyPerWrong: 12,
     consecutiveMissFail: 3,
     allowAllPhrases: true,
     turns: [
@@ -2686,71 +3220,85 @@ const CHAPTER5 = {
         speaker: 'ヴァレンティン',
         speakerEmoji: '👑',
         speech: 'これ以上の調査は必要ない。私が全責任を負う。だが読み手よ、帳簿の公開は町に混乱をもたらす。秩序のために、ここで止めるべきではないか？',
-        hint: '「全責任」と言いながら帳簿の公開阻止が目的。責任の取り方を自分で決めようとしている。',
+        hint: '権力者が「責任を取る」と言う時、取る責任の内容を誰が決めるかに注目せよ。',
         expression: 'nervous',
         choices: [
-          { text: '本当に全責任を取ろうとしている', correct: false },
-          { text: '「責任を取る」という言葉で帳簿公開を止め、自分の手で幕を引こうとしている', correct: true },
-          { text: '町の秩序を本当に心配している', correct: false },
-          { text: '読み手に取引を持ちかけている', correct: false },
+          { text: '長年の権力者としての覚悟を示している', correct: false },
+          { text: '「全責任」という言葉で公開の可否を自分の手に置こうとしている。主導権の掌握だ', correct: true },
+          { text: '秩序への本物の危惧から来る合理的な提案だ', correct: false },
+          { text: '読み手への取引を持ちかけながら出方を探っている', correct: false },
         ],
-        correctDamage: 28,
+        correctDamage: 17,
       },
       {
         speaker: 'マルグリット',
         speakerEmoji: '👩',
         speech: '…私も、読み手殿に申し上げたいことがある。帳簿が公になれば、ギルドは崩壊する。何百人という商人と職人の生活が奪われる。それでも、真実は必要か？',
-        hint: '第三者の被害を盾にして自分への追及を逸らしている。',
+        hint: '「それでも」という問いかけは答えを求めているのではなく、相手に罪悪感を植えつけるための言葉だ。',
         expression: 'nervous',
         choices: [
-          { text: '本当に労働者のことを心配している', correct: false },
-          { text: '無関係な第三者の被害を強調して自身への責任から目を逸らしている', correct: true },
-          { text: '経済的影響を正当に指摘している', correct: false },
-          { text: '読み手に選択を迫っている', correct: false },
+          { text: '労働者の生活を本当に心配している誠実な訴えだ', correct: false },
+          { text: '第三者の被害を盾にすることで、自分への直接の責任追及を回避しようとしている', correct: true },
+          { text: '経済的影響の正当な指摘であり無視できない論点だ', correct: false },
+          { text: '読み手に決断の重さを伝えようとしている', correct: false },
         ],
-        correctDamage: 28,
+        correctDamage: 17,
       },
       {
         speaker: 'オルランド',
         speakerEmoji: '⛪',
         speech: '主よ…私は全てを告白します。読み手殿、私の罪は神の前で赦しを乞うものです。しかし人の法の裁きは、神の慈悲とは別のものです。',
-        hint: '神の赦しと人の法の裁きを分離している。法的責任から逃れたい。',
+        hint: '告白と法的責任の回避は両立できる。「神に告白した」ことは、「人に告白した」ことを意味しない。',
         expression: 'sad',
         choices: [
-          { text: '真摯な信仰告白をしている', correct: false },
-          { text: '神の赦しを得れば人の法は関係ないという論理で法的責任を回避しようとしている', correct: true },
-          { text: '宗教者として神に委ねている', correct: false },
-          { text: '読み手への懺悔を行っている', correct: false },
+          { text: '宗教者として誠実な告白をしている', correct: false },
+          { text: '神への告白と人の裁きを分離することで、精神的な浄化と法的免責の両方を得ようとしている', correct: true },
+          { text: '宗教的な枠組みの中で誠実に向き合っている', correct: false },
+          { text: '全てを認める直前の苦しみを表現している', correct: false },
         ],
-        correctDamage: 25,
+        correctDamage: 16,
       },
       {
         speaker: 'ルカ',
         speakerEmoji: '🌫️',
         speech: '俺の父は…この部屋にいる誰かの命令で殺された。40年前。読み手よ、帳簿の中に、その夜の記録がある。俺はずっと、その名前を知りたかった。',
-        hint: 'これが真実の核心。ルカは断罪ではなく、真実の確認を求めている。',
+        hint: '「名前を知りたかった」という言葉は、知ることで何を終わらせたいかを示している。',
         expression: 'sad',
         choices: [
-          { text: '犯人を見つけて復讐したい', correct: false },
-          { text: '真実の確認が第一の目的。復讐より、父の死の真相を知ることを求めている', correct: true },
-          { text: '全員を告発したい', correct: false },
-          { text: '感情的になって判断が曇っている', correct: false },
+          { text: '復讐の準備が整い、断罪を求めている', correct: false },
+          { text: '父の死の事実確認が第一の目的。名前を知ることで、父の死を現実として受け入れようとしている', correct: true },
+          { text: '全員を法の場に引き出したいという正義感から来ている', correct: false },
+          { text: '長年の感情が噴出した、判断力を欠いた状態だ', correct: false },
         ],
-        correctDamage: 30,
+        correctDamage: 17,
+      },
+      {
+        speaker: 'エレナ',
+        speakerEmoji: '🌹',
+        speech: '…お母さま。私が戻ってきたのは、逃げ続けることに疲れたからではありません。ここで終わりにしたかった。全員が一緒に、終わりにしたかった。',
+        hint: '「終わり」という言葉が意味するものは、人によって異なる。エレナにとっての「終わり」は何か。',
+        expression: 'open',
+        choices: [
+          { text: '故郷への望郷の念から戻ってきた', correct: false },
+          { text: '母との和解を最終的な目的として戻ってきた', correct: false },
+          { text: '全員が同じ場所で真実と向き合うことで、それぞれの物語を終わらせたかった', correct: true },
+          { text: '帳簿の公開を阻止するために戻ってきた', correct: false },
+        ],
+        correctDamage: 17,
       },
       {
         speaker: '全員',
         speakerEmoji: '🏛️',
         speech: '……（長い沈黙が部屋を満たす。やがて、フェデリコが立ち上がった）私が全員に証言する。40年前のあの夜から、今日この日まで。全て。……（フェデリコの声は震えていたが、止まらなかった）',
-        hint: 'フェデリコの証言が全員の防御を崩す。このターンの正解は「傍観ではなく証言を支持する」。',
+        hint: 'フェデリコの立ち上がりは終わりではなく、始まりだ。読み手の役割はここで何か。',
         expression: 'open',
         choices: [
-          { text: 'フェデリコの証言を止める', correct: false },
-          { text: 'フェデリコの証言を支持し、全員が真実と向き合う場を作る', correct: true },
-          { text: '傍観して成り行きを見守る', correct: false },
-          { text: '証言内容の一部だけを公開する', correct: false },
+          { text: 'フェデリコの体力を考えて証言を止めるべきだ', correct: false },
+          { text: 'フェデリコの証言を支持し、全員が真実と向き合う場を維持することが読み手の役割だ', correct: true },
+          { text: '成り行きを傍観して介入しないのが賢明だ', correct: false },
+          { text: '証言内容を自分で判断して取捨選択すべきだ', correct: false },
         ],
-        correctDamage: 39,
+        correctDamage: 16,
       },
     ],
     confession: '（フェデリコの証言が終わった。室内は静寂に包まれた。ヴァレンティンは両手で顔を覆い、マルグリットはエレナの手をそっと握った。オルランドは静かに祈りを捧げた。そしてルカは、長い間目を閉じていたが、やがてゆっくりと頷いた。）\n\n「父は…ヴァレンティン配下の者に消された。40年前、父が密輸を告発しようとした夜に。フェデリコ老人は知っていた。だから均衡を保ち、誰も動けないようにした。…それが、この町の歴史だ。」\n\n（再び沈黙。そして誰からともなく、声が上がった。）\n\n読み手よ。あなたは全ての真実を手にしている。どうするかは、あなたが決めることだ。',
@@ -2805,9 +3353,12 @@ function getCurrentChapter() {
 const LEVEL_TABLE = [
   { lv: 1, exp: 0, unlock: '基本交渉' },
   { lv: 2, exp: 100, unlock: 'フレーズ効果+20%' },
-  { lv: 3, exp: 300, unlock: '表情ヒント' },
+  { lv: 3, exp: 300, unlock: '表情ヒント / アプローチ表示' },
   { lv: 4, exp: 500, unlock: 'AP+1' },
   { lv: 5, exp: 800, unlock: 'フレーズ合成' },
+  { lv: 6, exp: 1200, unlock: '洞察強化' },
+  { lv: 7, exp: 1700, unlock: '戦略的優位' },
+  { lv: 8, exp: 2300, unlock: 'AP+1（累計+2）' },
 ];
 
 const SYNTHESIS_RECIPES = [
@@ -2829,10 +3380,16 @@ const TUTORIAL_SHOWN = new Set();
 let state = {
   screen: 'title',
   ap: 3,
+  bonusAP: 0,           // Lv4/Lv8 で加算されるボーナスAP
   visitedLocations: [],
+  scoutedLocations: [], // 偵察済み（質問なしで立ち去った）
   askedQuestions: {},   // { npcId: [questionIndex, ...] }
+  npcTrustLevel: {},    // { npcId: 'positive'|'neutral'|'negative' }
+  questionsUsedThisNpc: 0, // 現在のNPCへの質問回数
+  apConsumedThisNpc: false, // 現在NPCへのAP消費済みフラグ
   flags: {},
   phrases: [],
+  usedPhrases: [],      // 交渉戦で使用済みのフレーズID（交渉終了まで消費扱い）
   level: 1,
   exp: 0,
   factions: { '領主府': 0, '商人ギルド': 0, '影の舟': 0, '旧市街': 0 },
@@ -2854,6 +3411,7 @@ function saveState() {
     ...state,
     flags: { ...state.flags },
     phrases: [...state.phrases],
+    usedPhrases: [...(state.usedPhrases || [])],
     askedQuestions: JSON.parse(JSON.stringify(state.askedQuestions)),
     factions: { ...state.factions },
     clearedChapters: [...state.clearedChapters],
@@ -2877,10 +3435,16 @@ function newGame() {
   state = {
     screen: 'title',
     ap: 3,
+    bonusAP: 0,
     visitedLocations: [],
+    scoutedLocations: [],
     askedQuestions: {},
+    npcTrustLevel: {},
+    questionsUsedThisNpc: 0,
+    apConsumedThisNpc: false,
     flags: {},
     phrases: [],
+    usedPhrases: [],
     level: 1,
     exp: 0,
     factions: { '領主府': 0, '商人ギルド': 0, '影の舟': 0, '旧市街': 0 },
@@ -3061,6 +3625,11 @@ function addExp(amount) {
   state.exp += amount;
   const newLv = getLevel(state.exp);
   state.level = newLv;
+  // Lv4/Lv8 ボーナスAP付与（累積）
+  const newBonusAP = (newLv >= 8 ? 2 : newLv >= 4 ? 1 : 0);
+  if (newBonusAP > state.bonusAP) {
+    state.bonusAP = newBonusAP;
+  }
   return newLv > oldLv ? newLv : null;
 }
 
@@ -3155,11 +3724,21 @@ function goToTown() {
     renderTownScreen();
   }
   showTutorial('town_first', 'NPCに話しかけて情報を集めましょう。APがなくなると聞き込みは終了です。');
+  // 第1章チュートリアル: 全員には聞けないことを説明
+  if (state.chapter === 1) {
+    showTutorial('ch1_ap_limit', '全員には聞けません。誰に聞くか慎重に選びましょう。話しかけるだけなら無料（偵察）ですが、質問するとAPを消費します。');
+  }
+}
+
+function getEffectiveMaxAP() {
+  const ch = getCurrentChapter();
+  return (ch.ap || 3) + (state.bonusAP || 0);
 }
 
 function renderTownScreen() {
   const ch = getCurrentChapter();
-  const maxAP = ch.ap || 3;
+  const baseAP = ch.ap || 3;
+  const maxAP = getEffectiveMaxAP();
 
   // Header
   const chLabel = document.querySelector('.town-chapter-label');
@@ -3173,7 +3752,7 @@ function renderTownScreen() {
     missionEl.innerHTML = `<strong style="color:var(--hint);">依頼:</strong> ${ch.mission}`;
   }
 
-  // AP
+  // AP表示（ボーナスAP対応）
   const apDots = document.getElementById('ap-dots-container');
   const apText = document.getElementById('ap-value-text');
   apDots.innerHTML = '';
@@ -3182,7 +3761,8 @@ function renderTownScreen() {
     dot.className = 'ap-dot' + (i >= state.ap ? ' used' : '');
     apDots.appendChild(dot);
   }
-  apText.textContent = `(${state.ap}/${maxAP})`;
+  const bonusStr = state.bonusAP > 0 ? ` +${state.bonusAP}` : '';
+  apText.textContent = `(${state.ap}/${maxAP}${bonusStr})`;
 
   const grid = document.getElementById('location-grid');
   grid.innerHTML = '';
@@ -3191,15 +3771,31 @@ function renderTownScreen() {
     const npc = ch.npcs[loc.npcId];
     if (!npc) return;
     const visited = state.visitedLocations.includes(loc.id);
-    const canGo = state.ap > 0 && !visited;
+    const scouted = !visited && state.scoutedLocations && state.scoutedLocations.includes(loc.id);
+    // 偵察済みは2回目以降はAP消費が必要なので残APを確認
+    const canGo = !visited && (scouted ? state.ap > 0 : true);
+
+    let statusText;
+    if (visited) {
+      statusText = '（訪問済み）';
+    } else if (scouted) {
+      statusText = state.ap > 0 ? '偵察済み（AP消費）' : 'APなし';
+    } else {
+      statusText = '偵察無料';
+    }
+
+    let cardClass = 'location-card';
+    if (visited) cardClass += ' visited';
+    else if (scouted) cardClass += ' scouted';
+    if (!canGo && !visited) cardClass += ' disabled';
 
     const card = document.createElement('div');
-    card.className = 'location-card' + (visited ? ' visited' : '') + (!canGo ? ' disabled' : '');
+    card.className = cardClass;
     card.innerHTML = `
       <div class="location-icon">${loc.icon}</div>
       <div class="location-name">${loc.name}</div>
       <div class="location-npc">${npc.name}</div>
-      <div class="location-status">${visited ? '（訪問済み）' : canGo ? 'AP -1' : state.ap === 0 ? 'APなし' : ''}</div>
+      <div class="location-status">${statusText}</div>
     `;
 
     if (canGo) {
@@ -3233,6 +3829,15 @@ document.getElementById('btn-phrasebook-town').addEventListener('click', openPhr
 function enterLocation(loc) {
   const ch = getCurrentChapter();
   const npc = ch.npcs[loc.npcId];
+  const scouted = state.scoutedLocations && state.scoutedLocations.includes(loc.id);
+  // 2回目以降（偵察済み）は入室時点でAP消費
+  if (scouted) {
+    state.ap = Math.max(0, state.ap - 1);
+    state.apConsumedThisNpc = true;
+  } else {
+    state.apConsumedThisNpc = false;
+  }
+  state.questionsUsedThisNpc = 0;
   openConversation(npc, loc);
 }
 
@@ -3244,6 +3849,9 @@ function openConversation(npc, loc) {
   currentConvLoc = loc;
   if (!state.askedQuestions[npc.name]) {
     state.askedQuestions[npc.name] = [];
+  }
+  if (!state.npcTrustLevel[npc.name]) {
+    state.npcTrustLevel[npc.name] = 'neutral';
   }
 
   document.getElementById('conv-portrait').textContent = npc.emoji;
@@ -3258,41 +3866,107 @@ function openConversation(npc, loc) {
   questionsLabel.style.display = 'none';
   questionList.innerHTML = '';
 
+  // scoutTextがあれば greetingの前に「読み手の観察」を表示
+  const obsEl = document.getElementById('conv-scout-obs');
+  if (obsEl) {
+    if (loc && loc.scoutText) {
+      obsEl.textContent = '（読み手の観察: ' + loc.scoutText + '）';
+      obsEl.style.display = 'block';
+    } else {
+      obsEl.textContent = '';
+      obsEl.style.display = 'none';
+    }
+  }
+
   typewriter(speech, npc.greeting, 30, () => {
     showQuestions(npc);
   });
 
   showScreen('conversation');
+  updateConvLeaveBtn();
+}
+
+function updateConvLeaveBtn() {
+  const btn = document.getElementById('btn-conv-leave');
+  if (!btn) return;
+  if (state.questionsUsedThisNpc === 0) {
+    btn.textContent = '立ち去る（AP消費なし）';
+  } else {
+    btn.textContent = '← 戻る';
+  }
 }
 
 function showQuestions(npc) {
   const questionsLabel = document.getElementById('conv-questions-label');
   const questionList = document.getElementById('conv-question-list');
 
+  // 質問カウンター表示ラベル
   questionsLabel.style.display = 'block';
+  questionsLabel.textContent = `— 何を聞く？　質問: ${state.questionsUsedThisNpc}/2`;
+
   questionList.innerHTML = '';
+
+  // AP不足メッセージ（既に表示中の場合は除去）
+  const existingMsg = document.getElementById('conv-ap-msg');
+  if (existingMsg) existingMsg.remove();
 
   npc.questions.forEach((q, idx) => {
     const asked = state.askedQuestions[npc.name]?.includes(idx);
 
     // Check conditional questions
-    let hidden = false;
-    if (q.requiresFlag && !state.flags[q.requiresFlag]) {
-      hidden = true;
-    }
-    if (hidden) return;
+    if (q.requiresFlag && !state.flags[q.requiresFlag]) return;
+
+    // 3問目以降はAP追加消費が必要
+    const isExtraAPRequired = state.questionsUsedThisNpc >= 2 && !asked;
+    const hasEnoughAP = state.ap > 0 || state.apConsumedThisNpc;
 
     const btn = document.createElement('button');
     btn.className = 'question-btn' + (asked ? ' asked' : '');
-    btn.textContent = q.text;
-    btn.disabled = asked;
 
-    btn.addEventListener('click', () => {
-      askQuestion(npc, q, idx);
-    });
+    // アプローチタイプ表示（Lv3以上）
+    let approachLabel = '';
+    if (state.level >= 3 && q.approachType && !asked) {
+      approachLabel = q.approachType === 'trust'
+        ? ' <span style="font-size:11px;color:var(--correct);margin-left:6px;">🤝 穏やかに</span>'
+        : ' <span style="font-size:11px;color:var(--hint);margin-left:6px;">🔍 直接に</span>';
+    }
+
+    // 3問目以降のラベル
+    const extraLabel = isExtraAPRequired
+      ? ' <span style="font-size:11px;color:var(--fail);margin-left:6px;">(AP+1)</span>'
+      : '';
+
+    btn.innerHTML = q.text + approachLabel + extraLabel;
+    btn.disabled = asked || (isExtraAPRequired && !hasEnoughAP);
+
+    if (!asked) {
+      btn.addEventListener('click', () => {
+        if (isExtraAPRequired) {
+          if (state.ap <= 0) {
+            showAPShortageMsg();
+            return;
+          }
+          // AP追加消費
+          state.ap = Math.max(0, state.ap - 1);
+        }
+        askQuestion(npc, q, idx);
+      });
+    }
 
     questionList.appendChild(btn);
   });
+}
+
+function showAPShortageMsg() {
+  const existing = document.getElementById('conv-ap-msg');
+  if (existing) return;
+  const questionList = document.getElementById('conv-question-list');
+  const msg = document.createElement('div');
+  msg.id = 'conv-ap-msg';
+  msg.style.cssText = 'font-size:13px; color:var(--fail); text-align:center; padding:8px; border:1px solid rgba(255,71,87,0.3); border-radius:4px; background:rgba(255,71,87,0.05); margin-top:8px;';
+  msg.textContent = 'APが足りません。立ち去るか交渉へ進みましょう。';
+  questionList.parentElement.appendChild(msg);
+  setTimeout(() => { if (msg.parentElement) msg.remove(); }, 3000);
 }
 
 function askQuestion(npc, question, idx) {
@@ -3301,6 +3975,28 @@ function askQuestion(npc, question, idx) {
   // Mark asked
   if (!state.askedQuestions[npc.name]) state.askedQuestions[npc.name] = [];
   state.askedQuestions[npc.name].push(idx);
+
+  // 1問目でAP消費（初回偵察かつ未消費の場合）
+  if (!state.apConsumedThisNpc) {
+    state.ap = Math.max(0, state.ap - 1);
+    state.apConsumedThisNpc = true;
+  }
+
+  // 質問カウンタ更新
+  state.questionsUsedThisNpc++;
+  updateConvLeaveBtn();
+
+  // trust/direct によるNPC信頼度変化
+  if (!state.npcTrustLevel[npc.name]) state.npcTrustLevel[npc.name] = 'neutral';
+  if (question.approachType === 'trust') {
+    const current = state.npcTrustLevel[npc.name];
+    if (current === 'negative') state.npcTrustLevel[npc.name] = 'neutral';
+    else state.npcTrustLevel[npc.name] = 'positive';
+  } else if (question.approachType === 'direct') {
+    const current = state.npcTrustLevel[npc.name];
+    if (current === 'positive') state.npcTrustLevel[npc.name] = 'neutral';
+    else state.npcTrustLevel[npc.name] = 'negative';
+  }
 
   // Type answer
   const speech = document.getElementById('conv-speech');
@@ -3315,13 +4011,28 @@ function askQuestion(npc, question, idx) {
       state.flags[question.setsFlag] = true;
     }
 
-    // Grant phrase
+    // Grant phrase（trust依存のsecretフレーズはtrust条件チェック）
     if (question.phrase) {
       const alreadyHas = state.phrases.some(p => p.id === question.phrase.id);
       if (!alreadyHas) {
-        const phrase = { ...question.phrase };
-        state.phrases.push(phrase);
-        showPhrasePopup(phrase, () => {
+        let phraseToGrant = { ...question.phrase };
+
+        // requiresTrust: そのNPCでtrust質問を先に1つ以上していなければsecretフレーズを弱い版に差し替え
+        if (question.phrase.type === 'secret' && question.requiresTrust) {
+          const npcTrust = state.npcTrustLevel[npc.name];
+          if (npcTrust !== 'positive') {
+            // 信頼が足りない: 弱い通常フレーズとして付与
+            phraseToGrant = {
+              ...question.phrase,
+              type: 'normal',
+              power: Math.max(5, Math.floor(question.phrase.power * 0.4)),
+              text: question.phrase.text + '（情報不十分）',
+            };
+          }
+        }
+
+        state.phrases.push(phraseToGrant);
+        showPhrasePopup(phraseToGrant, () => {
           showQuestions(npc);
           updateFAB();
         });
@@ -3337,9 +4048,18 @@ document.getElementById('btn-conv-leave').addEventListener('click', () => {
   if (!currentConvLoc) { goToTown(); return; }
 
   const loc = currentConvLoc;
-  if (!state.visitedLocations.includes(loc.id)) {
-    state.visitedLocations.push(loc.id);
-    state.ap = Math.max(0, state.ap - 1);
+
+  if (state.questionsUsedThisNpc === 0 && !state.apConsumedThisNpc) {
+    // 質問なし・AP未消費 → 偵察扱い（APなし、visitedにしない）
+    if (!state.scoutedLocations) state.scoutedLocations = [];
+    if (!state.scoutedLocations.includes(loc.id)) {
+      state.scoutedLocations.push(loc.id);
+    }
+  } else {
+    // 質問あり → 訪問済みにする（AP消費はaskQuestion内で済み）
+    if (!state.visitedLocations.includes(loc.id)) {
+      state.visitedLocations.push(loc.id);
+    }
   }
 
   checkSynthesis();
@@ -3451,6 +4171,8 @@ let negState = {
 
 function startNegotiation() {
   const neg = getNegotiation();
+  // 交渉開始時に使用済みフレーズをリセット（新しい交渉は全フレーズが使える）
+  state.usedPhrases = [];
   negState = {
     guard: neg.maxGuard,
     trust: neg.initialTrust,
@@ -3459,6 +4181,10 @@ function startNegotiation() {
     waitingForPhrase: false,
     pendingDamage: 0,
     hintShown: false,
+    correctCount: 0,
+    phraseUsedCount: 0,
+    totalTurns: 0,
+    intuitionDone: false,
   };
 
   const emoji = neg.targetEmoji || '?';
@@ -3539,42 +4265,142 @@ function nextNegTurn() {
   }
 
   const turnData = turns[negState.turn];
+  negState.intuitionDone = false;
   updateNegHUD();
 
   const speech = document.getElementById('neg-speech');
   const choicesGrid = document.getElementById('choices-grid');
   const hintEl = document.getElementById('neg-hint');
+  const intuitionPhase = document.getElementById('intuition-phase');
+  const intuitionResult = document.getElementById('intuition-result');
+  const stageDir = document.getElementById('stage-direction');
+  const subtextLabel = document.getElementById('subtext-label');
 
   hintEl.classList.remove('visible');
   choicesGrid.classList.remove('visible');
+  intuitionPhase.classList.remove('visible');
+  intuitionResult.className = 'intuition-result';
+  subtextLabel.style.display = 'none';
+  stageDir.style.display = 'none';
+
   choicesGrid.querySelectorAll('.choice-btn').forEach(b => {
     b.disabled = true;
     b.className = 'choice-btn';
+    b.style.visibility = 'visible';
   });
 
   speech.addEventListener('click', skipTypewriter, { once: true });
 
   typewriter(speech, turnData.speech, 30, () => {
-    // Show hint
-    hintEl.textContent = '【ヒント】' + turnData.hint;
-    hintEl.classList.add('visible');
-
-    // Show choices
-    setTimeout(() => {
-      const letters = ['a', 'b', 'c', 'd'];
-      letters.forEach((l, i) => {
-        const btn = document.getElementById('choice-' + l);
-        const textEl = document.getElementById('choice-' + l + '-text');
-        const choice = turnData.choices[i];
-        if (choice) {
-          textEl.textContent = choice.text;
-          btn.disabled = false;
-          btn.onclick = () => handleChoice(i, choice.correct, turnData);
-        }
-      });
-      choicesGrid.classList.add('visible');
-    }, 300);
+    // NPC台詞後 → 直感フェーズを表示（intuitionCorrectがある場合）
+    if (turnData.intuitionCorrect) {
+      showIntuitionPhase(turnData);
+    } else {
+      showSubtextChoices(turnData);
+    }
   });
+}
+
+function showIntuitionPhase(turnData) {
+  const intuitionPhase = document.getElementById('intuition-phase');
+  const intuitionResult = document.getElementById('intuition-result');
+
+  intuitionResult.className = 'intuition-result';
+  intuitionPhase.classList.add('visible');
+
+  // 直感ボタンにイベントを設定
+  intuitionPhase.querySelectorAll('.intuition-btn').forEach(btn => {
+    btn.disabled = false;
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', () => {
+      handleIntuition(newBtn.dataset.type, turnData);
+    });
+  });
+}
+
+function handleIntuition(selectedType, turnData) {
+  const intuitionPhase = document.getElementById('intuition-phase');
+  const intuitionResult = document.getElementById('intuition-result');
+  const stageDir = document.getElementById('stage-direction');
+
+  // ボタンを無効化
+  intuitionPhase.querySelectorAll('.intuition-btn').forEach(b => b.disabled = true);
+
+  const isHit = selectedType === turnData.intuitionCorrect;
+  negState.intuitionDone = true;
+
+  if (isHit) {
+    intuitionResult.className = 'intuition-result hit';
+    intuitionResult.textContent = '【直感的中】 +10 信頼';
+    negState.trust = Math.min(100, negState.trust + 10);
+    updateNegHUD();
+    flashGreen();
+
+    // intuitionHit（ト書き）を表示
+    if (turnData.intuitionHit) {
+      stageDir.textContent = turnData.intuitionHit;
+      stageDir.style.display = 'block';
+    }
+    // 直感命中フラグを negState に記録（タイミングボーナス用）
+    negState.intuitionHit = true;
+  } else {
+    intuitionResult.className = 'intuition-result miss';
+    intuitionResult.textContent = '【外れ】 読み違えた…';
+    negState.intuitionHit = false;
+  }
+
+  intuitionPhase.classList.remove('visible');
+
+  setTimeout(() => {
+    showSubtextChoices(turnData);
+  }, 800);
+}
+
+function showSubtextChoices(turnData) {
+  const choicesGrid = document.getElementById('choices-grid');
+  const hintEl = document.getElementById('neg-hint');
+  const subtextLabel = document.getElementById('subtext-label');
+
+  // ヒントはLv3以上（表情ヒント解放後）のみ表示
+  if (state.level >= 3) {
+    hintEl.textContent = '【観察】' + turnData.hint;
+    hintEl.classList.add('visible');
+  } else {
+    hintEl.classList.remove('visible');
+  }
+
+  subtextLabel.style.display = 'block';
+
+  // 信頼度40以下では不正解の選択肢1つをランダムに非表示（正解は必ず表示）
+  let hiddenIndex = -1;
+  if (negState.trust <= 40) {
+    const wrongIndices = turnData.choices
+      .map((c, i) => (!c.correct ? i : -1))
+      .filter(i => i !== -1);
+    if (wrongIndices.length > 0) {
+      hiddenIndex = wrongIndices[Math.floor(Math.random() * wrongIndices.length)];
+    }
+  }
+
+  const letters = ['a', 'b', 'c', 'd'];
+  letters.forEach((l, i) => {
+    const btn = document.getElementById('choice-' + l);
+    const textEl = document.getElementById('choice-' + l + '-text');
+    const choice = turnData.choices[i];
+    if (choice) {
+      textEl.textContent = choice.text;
+      if (i === hiddenIndex) {
+        btn.style.visibility = 'hidden';
+        btn.disabled = true;
+      } else {
+        btn.style.visibility = 'visible';
+        btn.disabled = false;
+        btn.onclick = () => handleChoice(i, choice.correct, turnData);
+      }
+    }
+  });
+  choicesGrid.classList.add('visible');
 }
 
 function handleChoice(idx, isCorrect, turnData) {
@@ -3588,11 +4414,17 @@ function handleChoice(idx, isCorrect, turnData) {
     btn.classList.add('correct');
     flashGreen();
     negState.consecutiveMiss = 0;
+    // 正解時に信頼度+5回復
+    negState.trust = Math.min(100, negState.trust + 5);
+    // 正解カウント（評価用）
+    if (!negState.correctCount) negState.correctCount = 0;
+    negState.correctCount++;
 
     showTutorial('first_correct', '正解です！ 所持フレーズを選んで相手にぶつけましょう。');
 
     negState.pendingDamage = turnData.correctDamage;
 
+    updateNegHUD();
     setTimeout(() => {
       openPhraseSelect(turnData);
     }, 400);
@@ -3625,6 +4457,38 @@ function handleChoice(idx, isCorrect, turnData) {
 // ===================================================================
 //  PHRASE SELECT IN NEGOTIATION
 // ===================================================================
+function calcPhrasePower(phrase, neg, turnData) {
+  const negTarget = neg.target;
+  const allowAll = neg.allowAllPhrases;
+  const isValid = allowAll || phrase.target === negTarget || phrase.target === 'all';
+
+  let power = phrase.power;
+
+  // Lv2: フレーズ効果+20%
+  if (state.level >= 2) {
+    power = Math.round(power * 1.2);
+  }
+
+  // 対象一致: x1.5
+  let multiplierLabel = '';
+  if (isValid) {
+    power = Math.round(power * 1.5);
+    multiplierLabel = 'x1.5';
+  }
+
+  // タイミングボーナス（bestPhraseIds一致）: x1.5追加（クリティカル）
+  const isCritical = turnData.bestPhraseIds && turnData.bestPhraseIds.includes(phrase.id);
+  if (isCritical && isValid) {
+    power = Math.round(power * 1.5);
+    multiplierLabel = 'CRITICAL x2.25';
+  } else if (isCritical) {
+    power = Math.round(power * 1.5);
+    multiplierLabel = 'CRITICAL x1.5';
+  }
+
+  return { power, isValid, isCritical, multiplierLabel };
+}
+
 function openPhraseSelect(turnData) {
   const overlay = document.getElementById('phrase-select-overlay');
   const list = document.getElementById('phrase-select-list');
@@ -3635,31 +4499,44 @@ function openPhraseSelect(turnData) {
 
   list.innerHTML = '';
 
-  const hasValidPhrase = state.phrases.some(p => allowAll || p.target === negTarget || p.target === 'all');
-  const targetDisplayName = neg.targetName || negTarget;
-  hintEl.textContent = hasValidPhrase ? `★ 緑枠は${targetDisplayName}への有効フレーズ（威力x2）` : '';
+  // 未消費フレーズのみ表示
+  const availablePhrases = state.phrases.filter(p => !(state.usedPhrases || []).includes(p.id));
 
-  if (state.phrases.length === 0) {
+  const hasValidPhrase = availablePhrases.some(p => allowAll || p.target === negTarget || p.target === 'all');
+  const targetDisplayName = neg.targetName || negTarget;
+  let hintText = '';
+  if (hasValidPhrase) {
+    hintText = `★ 緑枠は${targetDisplayName}への有効フレーズ（威力x1.5）`;
+  }
+  if (state.level >= 2) {
+    hintText += hintText ? ' / Lv2: 全フレーズ+20%' : 'Lv2: 全フレーズ+20%';
+  }
+  hintEl.textContent = hintText;
+
+  if (availablePhrases.length === 0) {
     const empty = document.createElement('div');
     empty.style.cssText = 'font-size:13px; color:var(--text-dim); text-align:center; padding:16px 0; font-style:italic;';
-    empty.textContent = 'フレーズがありません';
+    empty.textContent = state.phrases.length === 0 ? 'フレーズがありません' : '使えるフレーズがありません（全て使用済み）';
     list.appendChild(empty);
   } else {
-    state.phrases.forEach(p => {
-      const isValid = allowAll || p.target === negTarget || p.target === 'all';
-      const effectivePower = isValid ? p.power * 2 : p.power;
+    availablePhrases.forEach(p => {
+      const { power, isValid, isCritical, multiplierLabel } = calcPhrasePower(p, neg, turnData);
 
       const btn = document.createElement('button');
       btn.className = 'phrase-select-btn' + (isValid ? ' target-match' : '');
+      if (isCritical) {
+        btn.style.borderColor = '#ffd700';
+        btn.style.boxShadow = '0 0 8px rgba(255,215,0,0.4)';
+      }
       btn.innerHTML = `
         <span>「${p.text}」</span>
-        <span class="phrase-select-power ${isValid ? 'boosted' : ''}">
-          ${isValid ? `${effectivePower} (x2)` : effectivePower}
+        <span class="phrase-select-power ${isValid || isCritical ? 'boosted' : ''}">
+          ${power}${multiplierLabel ? ' (' + multiplierLabel + ')' : ''}
         </span>
       `;
 
       btn.addEventListener('click', () => {
-        applyPhrase(p, turnData, overlay);
+        applyPhrase(p, turnData, overlay, isCritical);
       });
 
       list.appendChild(btn);
@@ -3670,17 +4547,31 @@ function openPhraseSelect(turnData) {
 
   document.getElementById('phrase-select-skip').onclick = () => {
     overlay.classList.remove('show');
-    applyDamage(negState.pendingDamage, 0, turnData);
+    applyDamage(negState.pendingDamage, 0, turnData, false);
   };
 }
 
-function applyPhrase(phrase, turnData, overlay) {
+function applyPhrase(phrase, turnData, overlay, isCritical) {
   overlay.classList.remove('show');
   const neg = getNegotiation();
-  const negTarget = neg.target;
-  const allowAll = neg.allowAllPhrases;
-  const isValid = allowAll || phrase.target === negTarget || phrase.target === 'all';
-  const bonus = isValid ? phrase.power * 2 : phrase.power;
+
+  // フレーズを消費済みに登録
+  if (!state.usedPhrases) state.usedPhrases = [];
+  if (!state.usedPhrases.includes(phrase.id)) {
+    state.usedPhrases.push(phrase.id);
+  }
+
+  const { power } = calcPhrasePower(phrase, neg, turnData);
+  negState.phraseUsedCount = (negState.phraseUsedCount || 0) + 1;
+
+  // クリティカル演出
+  if (isCritical) {
+    const flash = document.createElement('div');
+    flash.className = 'critical-flash';
+    flash.textContent = '★ CRITICAL ★';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 1200);
+  }
 
   // Fly animation
   const card = document.createElement('div');
@@ -3688,7 +4579,6 @@ function applyPhrase(phrase, turnData, overlay) {
   card.textContent = `「${phrase.text}」`;
   document.body.appendChild(card);
 
-  const negHeader = document.querySelector('.neg-header');
   const portrait = document.getElementById('neg-portrait');
 
   const startRect = { left: window.innerWidth / 2, top: window.innerHeight / 2 };
@@ -3706,12 +4596,13 @@ function applyPhrase(phrase, turnData, overlay) {
   const anim = card.animate(keyframes, { duration: 400, easing: 'ease-in' });
   anim.onfinish = () => {
     card.remove();
-    applyDamage(negState.pendingDamage, bonus, turnData);
+    applyDamage(negState.pendingDamage, power, turnData, true);
   };
 }
 
-function applyDamage(baseDmg, bonusDmg, turnData) {
-  const total = baseDmg + bonusDmg;
+function applyDamage(baseDmg, bonusDmg, turnData, phraseUsed) {
+  // フレーズなし正解のみの場合はbaseDmgのみ（= 5）。フレーズあり時はphrase powerがbonusDmgに入る
+  const total = phraseUsed ? bonusDmg : baseDmg;
   negState.guard -= total;
 
   updateNegHUD();
@@ -3810,6 +4701,68 @@ document.getElementById('btn-fail-town').addEventListener('click', () => {
 });
 
 // ===================================================================
+//  SCORE CALCULATION
+// ===================================================================
+function calcScore() {
+  const neg = getNegotiation();
+  const totalTurns = neg.turns.length;
+  const correctCount = negState.correctCount || 0;
+  const trustRemain = Math.max(0, negState.trust);
+  const phraseUsed = negState.phraseUsedCount || 0;
+
+  // 正解率 (0-100)
+  const correctRate = totalTurns > 0 ? Math.round((correctCount / totalTurns) * 100) : 0;
+  // フレーズ適正使用率（正解ターン数に対するフレーズ使用回数の比率、最大100）
+  const phraseRate = correctCount > 0 ? Math.min(100, Math.round((phraseUsed / correctCount) * 100)) : 0;
+  // 信頼度残量スコア (0-100)
+  const trustScore = trustRemain;
+
+  // 総合スコア (0-100)
+  const totalScore = Math.round(correctRate * 0.5 + phraseRate * 0.3 + trustScore * 0.2);
+
+  let rank, rankDesc;
+  if (totalScore >= 85) {
+    rank = 'S'; rankDesc = '完璧な読み手。言葉の奥底まで見通した。';
+  } else if (totalScore >= 70) {
+    rank = 'A'; rankDesc = '鋭い洞察。本音を的確に捉えた。';
+  } else if (totalScore >= 55) {
+    rank = 'B'; rankDesc = '確かな読み。まだ見えていない部分もある。';
+  } else if (totalScore >= 40) {
+    rank = 'C'; rankDesc = '粗削りな読み。直感は当たっていた。';
+  } else {
+    rank = 'D'; rankDesc = '真実にはたどり着いた。次はもっと深く読め。';
+  }
+
+  return { rank, rankDesc, correctRate, phraseRate, trustRemain, totalScore };
+}
+
+function renderScore() {
+  const { rank, rankDesc, correctRate, phraseRate, trustRemain } = calcScore();
+
+  const rankEl = document.getElementById('score-rank');
+  rankEl.textContent = rank;
+  rankEl.className = `score-rank rank-${rank.toLowerCase()}`;
+
+  document.getElementById('score-rank-desc').textContent = rankDesc;
+
+  const detailsEl = document.getElementById('score-details');
+  detailsEl.innerHTML = `
+    <div class="score-detail-row">
+      <span>洞察精度</span>
+      <span class="score-detail-value">${correctRate}%</span>
+    </div>
+    <div class="score-detail-row">
+      <span>フレーズ活用</span>
+      <span class="score-detail-value">${phraseRate}%</span>
+    </div>
+    <div class="score-detail-row">
+      <span>信頼度残量</span>
+      <span class="score-detail-value">${trustRemain}</span>
+    </div>
+  `;
+}
+
+// ===================================================================
 //  RESULT
 // ===================================================================
 function goToResult() {
@@ -3822,6 +4775,9 @@ function goToResult() {
   // Update result chapter label
   const resultChapterEl = document.querySelector('.result-chapter');
   if (resultChapterEl) resultChapterEl.textContent = `第${state.chapter}章 クリア`;
+
+  // Render score
+  renderScore();
 
   const expGain = reward.exp;
   const lvUp = addExp(expGain);
